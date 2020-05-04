@@ -9,5 +9,8 @@
   :depends-on (:alexandria :cl-json)
   :components ((:file "src/package")
                (:file "src/util")
+               (:file "src/message")
+               (:file "src/db")
+               (:file "src/game")
                (:file "src/commands")
                (:file "src/discord-play-register")))

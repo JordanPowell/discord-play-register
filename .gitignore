@@ -3,3 +3,5 @@
 node_modules
 *.fasl
 auth.json
+db.lock
+db.db

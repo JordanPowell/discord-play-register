@@ -45,7 +45,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
       debugLog(`Runtime took ${new Date() - start}`);
     });
     
-    ps.stdin.write(message);
+    ps.stdin.write(JSON.stringify({user: user, user_id: userID, message: message, channel_id: channelID}));
     ps.stdin.end();
   }
 });
