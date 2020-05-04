@@ -1,0 +1,11 @@
+{
+    "name": "discord-play-register",
+    "version": "1.0.0",
+    "description": "Play register for discord",
+    "main": "bot.js",
+    "author": "Jordan Powell",
+    "dependencies": {
+        "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+        "winston": "^3.2.1"
+    }
+}
