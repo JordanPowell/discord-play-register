@@ -1,4 +1,4 @@
-# bot.py
+import time
 import asyncio
 import os
 import random
@@ -27,11 +27,26 @@ class DB:
 #<Message id=706997190320717954 channel=<TextChannel id=571090859144249376 name='general' position=0 nsfw=False news=False category_id=571090859144249375> type=<MessageType.default: 0> author=<Member id=136917603447865344 name='TestJockey' discriminator='1952' bot=False nick=None guild=<Guild id=571090859144249374 name='Jodran' shard_id=None chunked=True member_count=2>> flags=<MessageFlags value=0>>
 
 
+def split_by_first_mention(message):
+    msg = message.content
+    if msg.startswith('<@!'):
+        idx = msg.index('>') + 1
+        return msg[:idx], msg[idx:].strip()
+    else:
+        return '', msg
+        
+
+def is_bot_mention(mention):
+    return mention[3:-1] == config['CLIENT_ID']
+
+
+
+    
 class MessageHandler:
     def should_handle(self, message):
         raise NotImplementedError()
 
-    def get_all_messages(self, message):
+    def get_all_responses(self, message):
         raise NotImplementedError()
 
 
@@ -40,28 +55,29 @@ class MentionMessageHandler(MessageHandler):
     
     def should_handle(self, message):
         mention, remainder = split_by_first_mention(message)
-        return is_bot_mention(mention) and remainder.startswith(self.keyword)
+        return is_bot_mention(mention) and remainder.lower().startswith(self.keyword.lower())
 
 
 class StatusHandler(MentionMessageHandler):
     keyword = 'status'
         
-    def get_all_messages(self, message):
+    def get_all_responses(self, message):
         return ['Bot alive']
 
 
 
 message_handlers = [
-    # StatusHandler()  # :weary:
+    StatusHandler()  # :weary:
 ]
 
 
 async def handle_message(message):
     for message_handler in message_handlers:
         if message_handler.should_handle(message):
-            messages = message_handler.get_all_messages(message)
-            for message in messages:
-                await message.channel.send(msg)
+            responses = message_handler.get_all_responses(message)
+            for response in responses:
+                print(time.time(), 'Responding with: "%s"' % response)
+                await message.channel.send(response)
 
 
 
@@ -69,6 +85,8 @@ async def handle_message(message):
 async def on_message(message):
     if message.author == client.user:
         return
+    print(message.content)
+    print(message.clean_content)
 
     await handle_message(message)
 
