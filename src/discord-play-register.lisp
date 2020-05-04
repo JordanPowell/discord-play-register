@@ -1,5 +1,3 @@
-;;;; discord-play-register.lisp
-
 (in-package #:discord-play-register)
 
 (defun load-bot-id ()
@@ -15,18 +13,14 @@
         do (format stream "~A~%" line)))))
 
 (defun includes-bot-mention (message)
-  (search (format nil "<@!~A>" *bot-id*) message))
-
-(defun contains-trigger-words (messsage)
-  nil)
-
-(defun is-applicable-message (message)
-  (or (includes-bot-mention message)
-      (contains-trigger-words message)))
+  (string-contains (format nil "<@!~A>" *bot-id*) message))
 
 (defun process-message (message)
-  (when (is-applicable-message message)
-    (handle-applicable-message message)))
+  (when-let ((command (get-appropriate-command message)))
+    (execute-and-respond command message)))
 
-(defun handle-applicable-message (message)
-  (format t "Handling ~A~%" message))
+(defun get-appropriate-command (message)
+  (when-let ((cls (if (includes-bot-mention message)
+                      (cond ((string-contains "status" message)
+                             'StatusCommand)))))
+    (make-instance cls)))
