@@ -1,7 +1,2 @@
-#!/usr/bin/sbcl --script
-(loop for line = (read-line *standard-input* nil :eof) ; stream, no error, :eof value
-      until (eq line :eof)
-      do (format t "red~A~%" line))
-(format t "Hey, ~a~%" (+ 1 2))
-(format t "Hey, ~a~%" (+ 1 3))
-
+#!/bin/sh
+/usr/bin/env sbcl --noinform --disable-ldb --lose-on-corruption --non-interactive --load src/setup.lisp --eval "(discord-play-register:main)"

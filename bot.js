@@ -15,7 +15,9 @@ var bot = new Discord.Client({
 const thisMention = `<@!${auth.client_id}>`;
 
 bot.on('message', function (user, userID, channelID, message, evt) {
-  console.log('Debug: Message=', message);
+  if (auth.debug === true) {
+    console.log('Debug: Message=', message);
+  }
   // Our bot needs to know if it will execute a command
   // It will listen for messages that will start with `!`
   if (message.includes(thisMention)) {

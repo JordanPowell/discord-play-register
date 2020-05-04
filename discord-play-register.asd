@@ -6,5 +6,5 @@
   :license  "BSD 2-Clause License"
   :version "1.0.0"
   :serial t
-  :components ((:file "package")
-               (:file "discord-play-register")))
+  :components ((:file "src/package")
+               (:file "src/discord-play-register")))
