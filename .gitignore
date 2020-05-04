@@ -5,3 +5,8 @@ node_modules
 auth.json
 db.lock
 db.db
+.env
+__pycache__
+*.pyc
+settings.py
+
