@@ -200,7 +200,7 @@ def extract_remainder_after_fragments(fragments, content):
     
     
 class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
-    fragments = ["I'd play", "id play", "I'd paly", "id paly"]
+    fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly"]
 
     def get_all_responses_with_game(self, message, game):
         would_play = db.record_would_play(message.author, game)
