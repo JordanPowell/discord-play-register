@@ -138,7 +138,7 @@ def lookup_game_by_name_or_alias(name):
 
 def split_by_first_mention(message):
     msg = message.content
-    if msg.startswith('<@!'):
+    if msg.startswith('<@'):
         idx = msg.index('>') + 1
         return msg[:idx], msg[idx:].strip()
     else:
@@ -146,7 +146,7 @@ def split_by_first_mention(message):
         
 
 def is_bot_mention(mention):
-    return mention[3:-1] == config['CLIENT_ID']
+    return mention[3 if mention.startswith('<@!') else 2:-1] == config['CLIENT_ID']
 
 
 def create_mention(player):
