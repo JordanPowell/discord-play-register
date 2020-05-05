@@ -245,7 +245,7 @@ class PingHandler(GameExtractionMixin, MentionMessageHandler):
 
 class AccidentalRoleMentionHandler(MessageHandler):
     def should_handle(self, message):
-        return 'Play Register' in message.clean_content and '<@&' in messge.content
+        return 'Play Register' in message.clean_content and '<@&' in message.content
 
     def get_all_responses(self, message):
         return ['It looks like you tried to @ me but might have accidentally selected the role instead']
