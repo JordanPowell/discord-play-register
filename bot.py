@@ -39,8 +39,6 @@ def split_by_first_mention(message):
 def is_bot_mention(mention):
     return mention[3:-1] == config['CLIENT_ID']
 
-
-
     
 class MessageHandler:
     def should_handle(self, message):
@@ -50,6 +48,13 @@ class MessageHandler:
         raise NotImplementedError()
 
 
+class ContentBasedHandler(MessageHandler):
+    fragments = []
+
+    def should_handle(self, message):
+        return any((f.lower() in message.content.lower() for f in self.fragments))
+
+    
 class MentionMessageHandler(MessageHandler):
     keyword = None
     
@@ -57,7 +62,7 @@ class MentionMessageHandler(MessageHandler):
         mention, remainder = split_by_first_mention(message)
         return is_bot_mention(mention) and remainder.lower().startswith(self.keyword.lower())
 
-
+    
 class StatusHandler(MentionMessageHandler):
     keyword = 'status'
         
