@@ -44,6 +44,8 @@ class DB:
         self._store = set()
 
     def record_would_play(self, player, game):
+        if not game.name:
+            raise RuntimeError('Cannot record for a game with no name')
         wp = WouldPlay(player=player, game=game)
         self._store.add(wp)
         self._prune_expired()
@@ -203,8 +205,11 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly"]
 
     def get_all_responses_with_game(self, message, game):
-        would_play = db.record_would_play(message.author, game)
-        return ["%s would play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
+        if self.game_name and any(message.content.lower().startswith(f.lower()) for f in self.fragments):
+            would_play = db.record_would_play(message.author, game)
+            return ["%s would play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
+        else:
+            return []
 
     
 class StatusHandler(MentionMessageHandler):
