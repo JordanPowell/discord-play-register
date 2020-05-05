@@ -9,10 +9,10 @@ import discord
 
 TOKEN = config['DISCORD_TOKEN']
 
-client = discord.Client()    
+client = discord.Client()
 
 #<Message id=706997190320717954 channel=<TextChannel id=571090859144249376 name='general' position=0 nsfw=False news=False category_id=571090859144249375> type=<MessageType.default: 0> author=<Member id=136917603447865344 name='TestJockey' discriminator='1952' bot=False nick=None guild=<Guild id=571090859144249374 name='Jodran' shard_id=None chunked=True member_count=2>> flags=<MessageFlags value=0>>
-    
+
 
 message_handlers = [
     handlers.WouldPlayHandler(),
@@ -41,4 +41,3 @@ async def on_message(message):
 
 if __name__ == "__main__":
     client.run(TOKEN)
-

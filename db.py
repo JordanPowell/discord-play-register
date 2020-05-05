@@ -15,7 +15,7 @@ class WouldPlay:
     @property
     def expired(self):
         return self.expires_at <= time.time()
-        
+
     def __eq__(self, other):
         if type(other) is type(self):
             return (self.player.id == other.player.id and self.game.name == other.game.name)
@@ -55,4 +55,3 @@ class DB:
 
 
 db = DB()
-

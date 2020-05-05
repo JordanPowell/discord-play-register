@@ -17,7 +17,7 @@ class Game:
 
     def get_players_for_next_game(self):
         return self.get_available_players()[:self.max_players]
-    
+
     def is_ready_to_play(self):
         players = self.get_available_players()
         return len(players) >= self.min_players
@@ -39,10 +39,10 @@ class Game:
                     self.name,
                     self.name)]
         return []
-    
+
     def __str__(self):
         return '%s%s' % (self.name, ' (unknown game)' if not self.known else '')
-    
+
 class KnownGame(Game):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, known=True, **kwargs)

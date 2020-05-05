@@ -20,16 +20,16 @@ def split_by_first_mention(message):
         idx = msg.index('>') + 1
         return msg[:idx], msg[idx:].strip()
     else:
-        return '', msg        
+        return '', msg
 
-    
+
 def is_bot_mention(mention):
     return mention[3 if mention.startswith('<@!') else 2:-1] == config['CLIENT_ID']
 
 
 class GameExtractionMixin:
     def get_all_responses(self, message):
-        self.game_name = extract_remainder_after_fragments(self.fragments, message.content)        
+        self.game_name = extract_remainder_after_fragments(self.fragments, message.content)
         self.game = lookup_game_by_name_or_alias(self.game_name)
         return self.get_all_responses_with_game(message, self.game)
 
@@ -48,19 +48,19 @@ class ContentBasedHandler(MessageHandler):
     def should_handle(self, message):
         return any((f.lower() in message.content.lower() for f in self.fragments))
 
-    
+
 class MentionMessageHandler(MessageHandler):
     keyword = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fragments = [self.keyword]
-    
+
     def should_handle(self, message):
         mention, remainder = split_by_first_mention(message)
         return is_bot_mention(mention) and remainder.lower().startswith(self.keyword.lower())
 
-    
+
 class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly"]
 
@@ -71,10 +71,10 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
         else:
             return []
 
-    
+
 class StatusHandler(MentionMessageHandler):
     keyword = 'status'
-        
+
     def get_all_responses(self, message):
         messages = ['Bot alive']
         ready_messages = []
@@ -88,7 +88,7 @@ class StatusHandler(MentionMessageHandler):
 
 class ClearHandler(GameExtractionMixin, MentionMessageHandler):
     keyword = 'clear'
-    
+
     def get_all_responses_with_game(self, message, game):
         db.clear_game(game)
         return ['Cleared %s' % game]
@@ -96,10 +96,10 @@ class ClearHandler(GameExtractionMixin, MentionMessageHandler):
 
 class PingHandler(GameExtractionMixin, MentionMessageHandler):
     keyword = 'ping'
-    
+
     def get_all_responses_with_game(self, message, game):
         players = game.get_players_for_next_game()
-        db.clear_game(game)        
+        db.clear_game(game)
         return ['%s - ready to play %s.' % (','.join([create_mention(p) for p in players]), game)]
 
 
