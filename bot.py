@@ -242,11 +242,20 @@ class PingHandler(GameExtractionMixin, MentionMessageHandler):
         db.clear_game(game)        
         return ['%s - ready to play %s.' % (','.join([create_mention(p) for p in players]), game)]
 
-    
+
+class AccidentalRoleMentionHandler(MessageHandler):
+    def should_handle(self, message):
+        return 'Play Register' in message.clean_content and '<@&' in messge.content
+
+    def get_all_responses(self, message):
+        return ['It looks like you tried to @ me but might have accidentally selected the role instead']
+
+
 message_handlers = [
     WouldPlayHandler(),
     ClearHandler(),
     PingHandler(),
+    AccidentalRoleMentionHandler(),
     StatusHandler()  # :weary:
 ]
 
