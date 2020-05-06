@@ -139,3 +139,16 @@ class AccidentalRoleMentionHandler(MessageHandler):
 
     def get_all_responses(self, message):
         return ['It looks like you tried to @ me but might have accidentally selected the role instead']
+
+
+class QueryHandler(MentionMessageHandler):
+    pass
+
+class QueryGameHandler(QueryHandler):
+    pass
+
+class QueryAliasHandler(QueryHandler):
+    pass
+
+class QueryMinMaxPlayersHandler(QueryHandler):
+    pass
