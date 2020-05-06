@@ -1,4 +1,5 @@
 from db import db
+import json
 
 class Game:
     def __init__(self, name, aliases=[], min_players=0, max_players=100, known=False):
@@ -47,17 +48,16 @@ class KnownGame(Game):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, known=True, **kwargs)
 
-games = [
-    KnownGame(name='CS', aliases=['csgo', 'counterstrike', 'cs:go', 'inferno'], min_players=5, max_players=5),
-    KnownGame(name='Rocket League', aliases=['rl', '3s', '2s'], min_players=2, max_players=3),
-    KnownGame(name='Valorant', aliases=['valorant'], min_players=3, max_players=5),
-    KnownGame(name='League of Legends', aliases=['league','lol','xlol'], min_players=2, max_players=5),
-    KnownGame(name='Test', aliases=['tst'], min_players=1, max_players=1)
-]
-
 def lookup_game_by_name_or_alias(name):
     # Name may contain extra junk, e.g. "I'd play cs later, after food" would mean name="cs later, after food"
     for game in games:
         if game.loosely_matches(name):
             return game
     return Game(name=name) if name else None
+
+def get_known_games(json_filename='known_games.json'):
+    with open(json_filename) as json_file:
+        known_game_dict = json.load(json_file)
+    return [KnownGame(name=name, **props) for name, props in known_game_dict.items()]
+
+games = get_known_games()

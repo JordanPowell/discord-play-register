@@ -6,8 +6,8 @@
       "cs:go",
       "inferno"
     ],
-    "min players": 5,
-    "max players": 5
+    "min_players": 5,
+    "max_players": 5
   },
   "Rocket League": {
     "aliases": [
@@ -16,15 +16,15 @@
       "2s",
       "car ball"
     ],
-    "min players": 2,
-    "min players": 3
+    "min_players": 2,
+    "max_players": 3
   },
   "Valorant": {
     "aliases": [
       "valorant"
     ],
-    "min players": 3,
-    "max players": 5
+    "min_players": 3,
+    "max_players": 5
   },
   "League of Legends": {
     "aliases": [
@@ -32,14 +32,14 @@
       "lol",
       "xlol"
     ],
-    "min players": 2,
-    "max players": 5
+    "min_players": 2,
+    "max_players": 5
   },
   "Test": {
     "aliases": [
       "tst"
     ],
-    "min players": 10,
-    "max players": 10000000
+    "min_players": 10,
+    "max_players": 10000000
   }
 }
