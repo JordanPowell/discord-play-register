@@ -46,7 +46,7 @@ class ContentBasedHandler(MessageHandler):
     fragments = []
 
     def should_handle(self, message):
-        return any((f.lower() in message.content.lower() for f in self.fragments))
+        return any(message.content.lower().startswith(f.lower()) for f in self.fragments)
 
 
 class MentionMessageHandler(MessageHandler):
@@ -65,7 +65,7 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly"]
 
     def get_all_responses_with_game(self, message, game):
-        if self.game_name and any(message.content.lower().startswith(f.lower()) for f in self.fragments):
+        if self.game_name:
             would_play = db.record_would_play(message.author, game)
             return ["%s would play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
         else:
@@ -73,23 +73,18 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
 
 
 class SameHandler(GameExtractionMixin, ContentBasedHandler):
-    fragments = ['same', 'Same']
+    fragments = ['same to', 'same']
 
     def get_all_responses_with_game(self, message, game):
         would_play = []
-        fragment_present = any(message.content.lower().startswith(f.lower()) for f in self.fragments)
-        last_would_play = db.get_last_would_play(self.game_name)
-        
+        last_would_play = db.get_last_would_play(game)
+
         if not last_would_play:
             return ['Error! No fun here yet!']
 
-        if self.game_name and fragment_present:
-            would_play = db.record_would_play(message.author, game) 
+        game = game or last_would_play.game 
+        would_play = db.record_would_play(message.author, game) 
 
-        elif not self.game_name and fragment_present:
-            game = last_would_play.game
-            would_play = db.record_would_play(message.author, game)
-        
         return ["%s would also play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
 
 
