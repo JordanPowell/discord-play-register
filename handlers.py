@@ -110,9 +110,11 @@ class ClearHandler(GameExtractionMixin, MentionMessageHandler):
     keyword = 'clear'
 
     def get_all_responses_with_game(self, message, game):
-        db.clear_game(game)
-        return ['Cleared %s' % game]
-
+        if game:
+            db.clear_game(game)
+            return ['Cleared %s' % game]
+        else:
+            return ['No game specified!']
 
 class CancelHandler(MentionMessageHandler):
     keyword = 'cancel'
