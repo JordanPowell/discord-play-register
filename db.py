@@ -38,6 +38,9 @@ class DB:
         self._store.add(wp)
         self._prune_expired()
         return wp
+    
+    def cancel_would_plays(self, player):
+        self._store = filter(lambda x:x.player != player, self._store)
 
     def get_players_for_game(self, game):
         return [wp.player for wp in self.get_would_plays_for_game(game)]

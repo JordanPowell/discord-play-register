@@ -61,3 +61,4 @@ def lookup_game_by_name_or_alias(name):
         if game.loosely_matches(name):
             return game
     return Game(name=name)
+    
