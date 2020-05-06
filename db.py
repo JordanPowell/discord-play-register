@@ -42,13 +42,19 @@ class DB:
     def get_players_for_game(self, game):
         return [wp.player for wp in self.get_would_plays_for_game(game)]
 
-    def get_would_plays_for_game(self, game):
+    def get_would_plays(self):
         self._prune_expired()
-        return sorted([wp for wp in self._store if wp.game.name == game.name], key=lambda x: x.recorded_at)
+        return sorted(self._store, key=lambda x: x.recorded_at)
 
-    def get_last_would_play(self):
-        self._prune_expired()
-        sorted_wps = sorted([wp for wp in self._store], key=lambda x: x.recorded_at)
+    def get_would_plays_for_game(self, game):
+        return [wp for wp in self.get_would_plays() if wp.game.name == game.name]
+
+    def get_last_would_play(self, game):
+        if game:
+            sorted_wps = self.get_would_plays_for_game(game)
+        else:
+            sorted_wps = self.get_would_plays()
+
         return sorted_wps[-1] if sorted_wps else []
 
     def _prune_expired(self):

@@ -78,14 +78,15 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
     def get_all_responses_with_game(self, message, game):
         would_play = []
         fragment_present = any(message.content.lower().startswith(f.lower()) for f in self.fragments)
+        last_would_play = db.get_last_would_play(self.game_name)
+        
+        if not last_would_play:
+            return ['Error! No fun here yet!']
 
         if self.game_name and fragment_present:
             would_play = db.record_would_play(message.author, game) 
 
         elif not self.game_name and fragment_present:
-            last_would_play = db.get_last_would_play()
-            if not last_would_play:
-                return ['Error! No fun here yet!']
             game = last_would_play.game
             would_play = db.record_would_play(message.author, game)
         
