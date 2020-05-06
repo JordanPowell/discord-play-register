@@ -11,5 +11,4 @@ __pycache__
 *.pyc
 settings.py
 env-*
-
-/.idea/workspace.xml
+/.idea
