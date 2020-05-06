@@ -1,8 +1,12 @@
 from db import db
-from settings import config
 from utils import extract_remainder_after_fragments
 from game import lookup_game_by_name_or_alias, games
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+
+CLIENT_ID = os.getenv('CLIENT_ID')
 
 def create_mention(player):
     return '<@!%s>' % player.id
@@ -24,7 +28,7 @@ def split_by_first_mention(message):
 
 
 def is_bot_mention(mention):
-    return mention[3 if mention.startswith('<@!') else 2:-1] == config['CLIENT_ID']
+    return mention[3 if mention.startswith('<@!') else 2:-1] == CLIENT_ID
 
 
 class GameExtractionMixin:
@@ -108,6 +112,14 @@ class ClearHandler(GameExtractionMixin, MentionMessageHandler):
     def get_all_responses_with_game(self, message, game):
         db.clear_game(game)
         return ['Cleared %s' % game]
+
+
+class CancelHandler(MentionMessageHandler):
+    keyword = 'cancel'
+
+    def get_all_responses(self, message):
+        db.cancel_would_plays(message.author)
+        return ['Cancelled all play requests from %s' % (message.author.display_name)]
 
 
 class PingHandler(GameExtractionMixin, MentionMessageHandler):
