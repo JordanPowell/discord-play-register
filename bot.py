@@ -16,6 +16,7 @@ client = discord.Client()
 
 message_handlers = [
     handlers.WouldPlayHandler(),
+    handlers.SameHandler(),
     handlers.ClearHandler(),
     handlers.PingHandler(),
     handlers.AccidentalRoleMentionHandler(),

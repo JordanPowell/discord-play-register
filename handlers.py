@@ -72,6 +72,26 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
             return []
 
 
+class SameHandler(GameExtractionMixin, ContentBasedHandler):
+    fragments = ['same', 'Same']
+
+    def get_all_responses_with_game(self, message, game):
+        would_play = []
+        fragment_present = any(message.content.lower().startswith(f.lower()) for f in self.fragments)
+
+        if self.game_name and fragment_present:
+            would_play = db.record_would_play(message.author, game) 
+
+        elif not self.game_name and fragment_present:
+            last_would_play = db.get_last_would_play()
+            if not last_would_play:
+                return ['Error! No fun here yet!']
+            game = last_would_play.game
+            would_play = db.record_would_play(message.author, game)
+        
+        return ["%s would also play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
+
+
 class StatusHandler(MentionMessageHandler):
     keyword = 'status'
 

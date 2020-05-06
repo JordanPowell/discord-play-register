@@ -46,6 +46,11 @@ class DB:
         self._prune_expired()
         return sorted([wp for wp in self._store if wp.game.name == game.name], key=lambda x: x.recorded_at)
 
+    def get_last_would_play(self):
+        self._prune_expired()
+        sorted_wps = sorted([wp for wp in self._store], key=lambda x: x.recorded_at)
+        return sorted_wps[-1] if sorted_wps else []
+
     def _prune_expired(self):
         # why can't I do self.prune(wp -> wp.expired)
         self._store = set([wp for wp in self._store if not wp.expired])
