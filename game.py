@@ -1,5 +1,6 @@
 from db import db
 import json
+import os
 
 class Game:
     def __init__(self, name, aliases=[], min_players=0, max_players=100, known=False):
@@ -55,7 +56,7 @@ def lookup_game_by_name_or_alias(name):
             return game
     return Game(name=name) if name else None
 
-def get_known_games(json_filename='known_games.json'):
+def get_known_games(json_filename=os.path.join(os.path.dirname(__file__), 'known_games.json')):
     with open(json_filename) as json_file:
         known_game_dict = json.load(json_file)
     return [KnownGame(name=name, **props) for name, props in known_game_dict.items()]
