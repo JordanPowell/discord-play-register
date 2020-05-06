@@ -10,4 +10,5 @@ db.db
 __pycache__
 *.pyc
 settings.py
+env-*
 

@@ -48,7 +48,7 @@ class KnownGame(Game):
         super().__init__(*args, known=True, **kwargs)
 
 games = [
-    KnownGame(name='CS', aliases=['csgo', 'counterstrike', 'cs:go'], min_players=5, max_players=5),
+    KnownGame(name='CS', aliases=['csgo', 'counterstrike', 'cs:go', 'inferno'], min_players=5, max_players=5),
     KnownGame(name='Rocket League', aliases=['rl', '3s', '2s'], min_players=2, max_players=3),
     KnownGame(name='Valorant', aliases=['valorant'], min_players=3, max_players=5),
     KnownGame(name='League of Legends', aliases=['league','lol','xlol'], min_players=2, max_players=5),
@@ -60,5 +60,4 @@ def lookup_game_by_name_or_alias(name):
     for game in games:
         if game.loosely_matches(name):
             return game
-    return Game(name=name)
-    
+    return Game(name=name) if name else None
