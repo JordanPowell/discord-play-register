@@ -40,10 +40,7 @@ class DB:
         return wp
     
     def cancel_would_plays(self, player):
-        temp = set()
-        for wp in filter(lambda x:x.player != player, self._store):
-            temp.add(wp)
-        self._store = temp
+        self._store = set([wp for wp in self._store if wp.player != player])
 
     def get_players_for_game(self, game):
         return [wp.player for wp in self.get_would_plays_for_game(game)]
