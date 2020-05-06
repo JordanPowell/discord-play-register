@@ -97,12 +97,14 @@ class ClearHandler(GameExtractionMixin, MentionMessageHandler):
         db.clear_game(game)
         return ['Cleared %s' % game]
 
+
 class CancelHandler(MentionMessageHandler):
     keyword = 'cancel'
-    
+
     def get_all_responses(self, message):
         db.cancel_would_plays(message.author)
-        return ['Cancelled play requests from %s' % (message.author.display_name)]
+        return ['Cancelled all play requests from %s' % (message.author.display_name)]
+
 
 class PingHandler(GameExtractionMixin, MentionMessageHandler):
     keyword = 'ping'
