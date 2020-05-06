@@ -12,3 +12,4 @@ __pycache__
 settings.py
 env-*
 
+/.idea/workspace.xml

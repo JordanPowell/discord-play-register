@@ -1,0 +1,37 @@
+{
+  "CS": {
+    "aliases": [
+      "csgo",
+      "counterstrike",
+      "cs:go",
+      "inferno"
+    ],
+    "min players": 5,
+    "max players": 5
+  },
+  "Rocket League": {
+    "aliases": [
+      "rl",
+      "3s",
+      "2s",
+      "car ball"
+    ]
+  },
+  "Valorant": {
+    "aliases": [
+      "valorant"
+    ]
+  },
+  "League of Legends": {
+    "aliases": [
+      "league",
+      "lol",
+      "xlol"
+    ]
+  },
+  "Test": {
+    "aliases": [
+      "tst"
+    ]
+  }
+}
