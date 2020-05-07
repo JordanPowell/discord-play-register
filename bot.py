@@ -22,7 +22,9 @@ message_handlers = [
     handlers.CancelHandler(),
     handlers.PingHandler(),
     handlers.AccidentalRoleMentionHandler(),
-    handlers.StatusHandler()
+    handlers.StatusHandler(),
+    handlers.QueryGameHandler(),
+    handlers.QueryPropertyHandler()
 ]
 
 

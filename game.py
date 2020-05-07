@@ -1,6 +1,7 @@
 from db import db
 import json
 
+
 class Game:
     def __init__(self, name, aliases=[], min_players=0, max_players=100, known=False):
         self.name = name
@@ -44,9 +45,11 @@ class Game:
     def __str__(self):
         return '%s%s' % (self.name, ' (unknown game)' if not self.known else '')
 
+
 class KnownGame(Game):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, known=True, **kwargs)
+
 
 def lookup_game_by_name_or_alias(name):
     # Name may contain extra junk, e.g. "I'd play cs later, after food" would mean name="cs later, after food"
@@ -55,9 +58,11 @@ def lookup_game_by_name_or_alias(name):
             return game
     return Game(name=name) if name else None
 
+
 def get_known_games(json_filename='known_games.json'):
     with open(json_filename) as json_file:
         known_game_dict = json.load(json_file)
     return [KnownGame(name=name, **props) for name, props in known_game_dict.items()]
+
 
 games = get_known_games()
