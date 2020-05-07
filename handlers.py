@@ -8,6 +8,7 @@ load_dotenv()
 
 CLIENT_ID = os.getenv('CLIENT_ID')
 
+
 def create_mention(player):
     return '<@!%s>' % player.id
 
@@ -116,6 +117,7 @@ class ClearHandler(GameExtractionMixin, MentionMessageHandler):
         else:
             return ['No game specified!']
 
+
 class CancelHandler(MentionMessageHandler):
     keyword = 'cancel'
 
@@ -139,3 +141,24 @@ class AccidentalRoleMentionHandler(MessageHandler):
 
     def get_all_responses(self, message):
         return ['It looks like you tried to @ me but might have accidentally selected the role instead']
+
+
+class QueryGameHandler(MentionMessageHandler):
+    keyword = 'query games'
+
+    def get_all_responses(self, message):
+        return ['\n'.join([game.name for game in games])]
+
+
+class QueryPropertyHandler(MentionMessageHandler):
+    keyword = 'query'
+
+    def get_all_responses(self, message):
+        mention, remainder = split_by_first_mention(message)
+        attribute, game_name = remainder[len(self.keyword)+1:].split(' ')[:2]
+        game = lookup_game_by_name_or_alias(game_name)
+        attribute_display = {
+            'aliases': lambda z: ', '.join([alias for alias in z])
+        }
+        display_function = attribute_display.get(attribute, lambda x: str(x))
+        return ["%s: %s" % (attribute, display_function(getattr(game, attribute)))]
