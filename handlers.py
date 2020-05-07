@@ -153,23 +153,22 @@ class AccidentalRoleMentionHandler(MessageHandler):
         return ['It looks like you tried to @ me but might have accidentally selected the role instead']
 
 
-class QueryGameHandler(MentionMessageHandler):
-    keywords = ['query games']
-
-    def get_all_responses(self, message):
-        return ['\n'.join([game.name for game in get_known_games()])]
-
-
-class QueryPropertyHandler(MentionMessageHandler):
+class QueryHandler(MentionMessageHandler):
     keywords = ['query']
+    query_game_fragments = ['games', 'game', 'list', 'g']
 
     def get_all_responses(self, message):
         mention, remainder = split_by_first_mention(message)
         found_keyword, remainder = self.split_string_by_keywords(remainder)
-        attribute, game_name = remainder.split(' ')[:2]
-        game = lookup_game_by_name_or_alias(game_name)
-        attribute_display = {
-            'aliases': lambda z: ', '.join([alias for alias in z])
-        }
-        display_function = attribute_display.get(attribute, lambda x: str(x))
-        return ["%s: %s" % (attribute, display_function(getattr(game, attribute)))]
+
+        if any(remainder.lower().startswith(query_game_fragment.lower())
+               for query_game_fragment in self.query_game_fragments):
+            return ['\n'.join([game.name for game in get_known_games()])]
+        else:
+            attribute, game_name = remainder.split(' ')[:2]
+            game = lookup_game_by_name_or_alias(game_name)
+            attribute_display = {
+                'aliases': lambda z: ', '.join([alias for alias in z])
+            }
+            display_function = attribute_display.get(attribute, lambda x: str(x))
+            return ["%s: %s" % (attribute, display_function(getattr(game, attribute)))]
