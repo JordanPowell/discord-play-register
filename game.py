@@ -1,5 +1,6 @@
 from db import db
 import json
+import os
 
 
 class Game:
@@ -51,15 +52,27 @@ class KnownGame(Game):
         super().__init__(*args, known=True, **kwargs)
 
 
-def lookup_game_by_name_or_alias(name):
-    # Name may contain extra junk, e.g. "I'd play cs later, after food" would mean name="cs later, after food"
+def lookup_known_game_by_name_or_alias(name):
     for game in get_known_games():
         if game.loosely_matches(name):
             return game
-    return Game(name=name) if name else None
+
+def lookup_game_by_name_or_alias(name):
+    # Name may contain extra junk, e.g. "I'd play cs later, after food" would mean name="cs later, after food"
+    game = lookup_known_game_by_name_or_alias(name)
+    return game if game else Game(name=name)
 
 
-def get_known_games(json_filename='known_games.json'):
+def read_games_json_dict(json_filename=os.path.join(os.path.dirname(__file__), 'known_games.json')):
     with open(json_filename) as json_file:
-        known_game_dict = json.load(json_file)
+        return json.load(json_file)
+
+
+def write_games_json_dict(known_games_json, json_filename=os.path.join(os.path.dirname(__file__), 'known_games.json')):
+    with open(json_filename, "w") as json_file:
+        json.dump(known_games_json, json_file, sort_keys=True, indent=4)
+
+
+def get_known_games():
+    known_game_dict = read_games_json_dict()
     return [KnownGame(name=name, **props) for name, props in known_game_dict.items()]

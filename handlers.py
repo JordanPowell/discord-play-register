@@ -1,6 +1,7 @@
 from db import db
 from utils import extract_remainder_after_fragments
-from game import lookup_game_by_name_or_alias, get_known_games
+from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_game_by_name_or_alias, \
+    write_games_json_dict, read_games_json_dict
 from dotenv import load_dotenv
 import os
 
@@ -26,6 +27,27 @@ def split_by_first_mention(message):
         return msg[:idx], msg[idx:].strip()
     else:
         return '', msg
+
+
+def message_starts_with_any_fragment(message, fragments):
+    return any(message.lower().startswith(query_game_fragment.lower())
+               for query_game_fragment in fragments)
+
+
+def message_pertains_to_all_games(message):
+    query_game_fragments = ['games', 'game', 'list', 'g']
+    return message_starts_with_any_fragment(message, query_game_fragments)
+
+
+def default_game_json_template(game_name):
+    return {
+        game_name:
+            {
+                'aliases': [],
+                'max_players': 5,
+                'min_players': 2
+            }
+    }
 
 
 def is_bot_mention(mention):
@@ -155,14 +177,12 @@ class AccidentalRoleMentionHandler(MessageHandler):
 
 class QueryHandler(MentionMessageHandler):
     keywords = ['query']
-    query_game_fragments = ['games', 'game', 'list', 'g']
 
     def get_all_responses(self, message):
         mention, remainder = split_by_first_mention(message)
         found_keyword, remainder = self.split_string_by_keywords(remainder)
 
-        if any(remainder.lower().startswith(query_game_fragment.lower())
-               for query_game_fragment in self.query_game_fragments):
+        if message_pertains_to_all_games(remainder):
             return ['\n'.join([game.name for game in get_known_games()])]
         else:
             attribute, game_name = remainder.split(' ')[:2]
@@ -172,3 +192,30 @@ class QueryHandler(MentionMessageHandler):
             }
             display_function = attribute_display.get(attribute, lambda x: str(x))
             return ["%s: %s" % (attribute, display_function(getattr(game, attribute)))]
+
+
+class AddHandler(MentionMessageHandler):
+    keywords = ['add']
+    json_filename = os.path.join(os.path.dirname(__file__), 'known_games.json')
+
+    def get_all_responses(self, message):
+        mention, remainder = split_by_first_mention(message)
+        found_keyword, remainder = self.split_string_by_keywords(remainder)
+        split_remainder = remainder.split(' ')
+        if message_pertains_to_all_games(split_remainder[0]):
+            if len(split_remainder) == 1:
+                return ["Incorrect command: Try 'add game <game name>'"]
+            else:
+                new_game = ' '.join(split_remainder[1:])
+
+            if lookup_known_game_by_name_or_alias(new_game):
+                return ["That game already exists you absolute degenerate. Don't trigger me."]
+            else:
+                new_game_dict = default_game_json_template(new_game)
+                known_games_dict = read_games_json_dict()
+                known_games_dict.update(new_game_dict)
+                write_games_json_dict(known_games_dict)
+                return ["Congratulations - %s has been added to the known games list! Fantastic work there comrade, give yourself a pat on the back!" % new_game]
+        else:
+            # TODO: "add <property> <game name> <value>"
+            pass

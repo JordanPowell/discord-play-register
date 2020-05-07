@@ -13,3 +13,4 @@ settings.py
 env-*
 /.idea
 known_games.json
+venv

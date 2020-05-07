@@ -21,7 +21,8 @@ message_handlers = [
     handlers.PingHandler(),
     handlers.AccidentalRoleMentionHandler(),
     handlers.StatusHandler(),
-    handlers.QueryHandler()
+    handlers.QueryHandler(),
+    handlers.AddHandler()
 ]
 
 
