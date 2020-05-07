@@ -53,7 +53,7 @@ class KnownGame(Game):
 
 def lookup_game_by_name_or_alias(name):
     # Name may contain extra junk, e.g. "I'd play cs later, after food" would mean name="cs later, after food"
-    for game in games:
+    for game in get_known_games():
         if game.loosely_matches(name):
             return game
     return Game(name=name) if name else None
@@ -63,6 +63,3 @@ def get_known_games(json_filename='known_games.json'):
     with open(json_filename) as json_file:
         known_game_dict = json.load(json_file)
     return [KnownGame(name=name, **props) for name, props in known_game_dict.items()]
-
-
-games = get_known_games()

@@ -1,6 +1,6 @@
 from db import db
 from utils import extract_remainder_after_fragments
-from game import lookup_game_by_name_or_alias, games
+from game import lookup_game_by_name_or_alias, get_known_games
 from dotenv import load_dotenv
 import os
 
@@ -109,7 +109,7 @@ class StatusHandler(MentionMessageHandler):
     def get_all_responses(self, message):
         messages = ['Bot alive']
         ready_messages = []
-        for game in games:
+        for game in get_known_games():
             players = game.get_available_players()
             if players:
                 messages.append('%s has %s' % (game, len(players)))
@@ -157,7 +157,7 @@ class QueryGameHandler(MentionMessageHandler):
     keywords = ['query games']
 
     def get_all_responses(self, message):
-        return ['\n'.join([game.name for game in games])]
+        return ['\n'.join([game.name for game in get_known_games()])]
 
 
 class QueryPropertyHandler(MentionMessageHandler):
