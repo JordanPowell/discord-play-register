@@ -1,2 +1,4 @@
 language: python
+env:
+    - CLIENT_ID=123
 script: python -m unittest
