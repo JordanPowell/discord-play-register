@@ -1,5 +1,8 @@
-DEFAULT_EXPIRY_S = 60 * 60 * 4
 import time
+
+
+DEFAULT_EXPIRY_S = 60 * 60 * 4
+
 
 class WouldPlay:
     def __init__(self, player, game, expires_at=None):
@@ -26,7 +29,6 @@ class WouldPlay:
         return hash((self.player.id, self.game.name))
 
 
-
 class DB:
     def __init__(self):
         self._store = set()
@@ -38,7 +40,7 @@ class DB:
         wp = WouldPlay(player=player, game=game)
         self._store.add(wp)
         return wp
-    
+
     def cancel_would_plays(self, player):
         self._store = set([wp for wp in self._store if wp.player != player])
 

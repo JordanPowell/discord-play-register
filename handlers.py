@@ -68,7 +68,7 @@ class MentionMessageHandler(MessageHandler):
     def split_string_by_keywords(self, string):
         for keyword in self.keywords:
             kw_removed_string = string.replace(keyword, '', 1)
-            
+
             if kw_removed_string != string:
                 kw_removed_string = kw_removed_string.strip()
                 return keyword, kw_removed_string
@@ -97,8 +97,8 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
         if not last_would_play:
             return []
 
-        game = game or last_would_play.game 
-        would_play = db.record_would_play(message.author, game) 
+        game = game or last_would_play.game
+        would_play = db.record_would_play(message.author, game)
 
         return ["%s would also play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
 
