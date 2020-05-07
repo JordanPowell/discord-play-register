@@ -55,15 +55,25 @@ class ContentBasedHandler(MessageHandler):
 
 
 class MentionMessageHandler(MessageHandler):
-    keyword = None
+    keywords = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fragments = [self.keyword]
+        self.fragments = self.keywords
 
     def should_handle(self, message):
         mention, remainder = split_by_first_mention(message)
-        return is_bot_mention(mention) and remainder.lower().startswith(self.keyword.lower())
+        return is_bot_mention(mention) and any(remainder.lower().startswith(kw.lower()) for kw in self.keywords)
+
+    def split_string_by_keywords(self, string):
+        for keyword in self.keywords:
+            kw_removed_string = string.replace(keyword, '', 1)
+            
+            if kw_removed_string != string:
+                kw_removed_string = kw_removed_string.strip()
+                return keyword, kw_removed_string
+
+        return None, string
 
 
 class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
@@ -94,7 +104,7 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
 
 
 class StatusHandler(MentionMessageHandler):
-    keyword = 'status'
+    keywords = ['status']
 
     def get_all_responses(self, message):
         messages = ['Bot alive']
@@ -108,7 +118,7 @@ class StatusHandler(MentionMessageHandler):
 
 
 class ClearHandler(GameExtractionMixin, MentionMessageHandler):
-    keyword = 'clear'
+    keywords = ['clear']
 
     def get_all_responses_with_game(self, message, game):
         if game:
@@ -119,7 +129,7 @@ class ClearHandler(GameExtractionMixin, MentionMessageHandler):
 
 
 class CancelHandler(MentionMessageHandler):
-    keyword = 'cancel'
+    keywords = ['cancel']
 
     def get_all_responses(self, message):
         db.cancel_would_plays(message.author)
@@ -127,7 +137,7 @@ class CancelHandler(MentionMessageHandler):
 
 
 class PingHandler(GameExtractionMixin, MentionMessageHandler):
-    keyword = 'ping'
+    keywords = ['ping', 'p']
 
     def get_all_responses_with_game(self, message, game):
         players = game.get_players_for_next_game()
@@ -144,18 +154,19 @@ class AccidentalRoleMentionHandler(MessageHandler):
 
 
 class QueryGameHandler(MentionMessageHandler):
-    keyword = 'query games'
+    keywords = ['query games']
 
     def get_all_responses(self, message):
         return ['\n'.join([game.name for game in games])]
 
 
 class QueryPropertyHandler(MentionMessageHandler):
-    keyword = 'query'
+    keywords = ['query']
 
     def get_all_responses(self, message):
         mention, remainder = split_by_first_mention(message)
-        attribute, game_name = remainder[len(self.keyword)+1:].split(' ')[:2]
+        found_keyword, remainder = self.split_string_by_keywords(remainder)
+        attribute, game_name = remainder.split(' ')[:2]
         game = lookup_game_by_name_or_alias(game_name)
         attribute_display = {
             'aliases': lambda z: ', '.join([alias for alias in z])
