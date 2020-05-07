@@ -76,11 +76,8 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly"]
 
     def get_all_responses_with_game(self, message, game):
-        if game.name:
-            would_play = db.record_would_play(message.author, game)
-            return ["%s would play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
-        else:
-            return []
+        would_play = db.record_would_play(message.author, game)
+        return ["%s would play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
 
 
 class SameHandler(GameExtractionMixin, ContentBasedHandler):
