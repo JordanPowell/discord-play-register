@@ -95,7 +95,7 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
         last_would_play = db.get_last_would_play(game)
 
         if not last_would_play:
-            return ['Error! No fun here yet!']
+            return []
 
         game = game or last_would_play.game 
         would_play = db.record_would_play(message.author, game) 
