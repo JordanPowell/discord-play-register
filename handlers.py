@@ -34,9 +34,9 @@ def is_bot_mention(mention):
 
 class GameExtractionMixin:
     def get_all_responses(self, message):
-        self.game_name = extract_remainder_after_fragments(self.fragments, message.content)
-        self.game = lookup_game_by_name_or_alias(self.game_name)
-        return self.get_all_responses_with_game(message, self.game)
+        game_name = extract_remainder_after_fragments(self.fragments, message.content)
+        game = lookup_game_by_name_or_alias(game_name)
+        return self.get_all_responses_with_game(message, game)
 
 
 class MessageHandler:
@@ -70,7 +70,7 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly"]
 
     def get_all_responses_with_game(self, message, game):
-        if self.game_name:
+        if game.name:
             would_play = db.record_would_play(message.author, game)
             return ["%s would play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
         else:
