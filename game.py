@@ -1,5 +1,6 @@
 from db import db
 import json
+import os
 
 
 class Game:
@@ -57,7 +58,6 @@ def lookup_game_by_name_or_alias(name):
         if game.loosely_matches(name):
             return game
     return Game(name=name) if name else None
-
 
 def get_known_games(json_filename='known_games.json'):
     with open(json_filename) as json_file:

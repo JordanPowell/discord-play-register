@@ -41,5 +41,9 @@
     ],
     "min_players": 10,
     "max_players": 10000000
+  },
+  "Squad": {
+    "min_players": 1,
+    "max_players": 1
   }
 }
