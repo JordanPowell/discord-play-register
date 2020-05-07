@@ -4,4 +4,5 @@ The
 "Same"
 Bot
 
-https://travis-ci.com/JordanPowell/discord-play-register.svg?branch=master
+[![Build Status](https://travis-ci.com/JordanPowell/discord-play-register.svg?branch=master)]
+
