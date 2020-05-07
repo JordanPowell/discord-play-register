@@ -112,7 +112,9 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
         for game in games:
             would_play = db.record_would_play(message.author, game)
             messages += ["%s would also play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))]
-        return messages + [get_any_ready_messages(game) for game in games]
+        for game in games:
+            messages += get_any_ready_messages(game)
+        return messages
 
     def get_all_responses_with_game(self, message, game):
         return self.get_all_responses_with_optional_game(message, game)
