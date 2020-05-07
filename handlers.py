@@ -26,7 +26,7 @@ def split_by_first_mention(message):
         return msg[:idx], msg[idx:].strip()
     else:
         return '', msg
-        
+
 
 def is_bot_mention(mention):
     return mention[3 if mention.startswith('<@!') else 2:-1] == CLIENT_ID
@@ -118,7 +118,7 @@ class StatusHandler(MentionMessageHandler):
 
 
 class ClearHandler(GameExtractionMixin, MentionMessageHandler):
-    keywords = 'clear'
+    keywords = ['clear']
 
     def get_all_responses_with_game(self, message, game):
         if game:
