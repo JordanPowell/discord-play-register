@@ -45,6 +45,12 @@ class Game:
     def __str__(self):
         return '%s%s' % (self.name, ' (unknown game)' if not self.known else '')
 
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
 
 class KnownGame(Game):
     def __init__(self, *args, **kwargs):
