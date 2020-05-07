@@ -4,5 +4,5 @@ The
 "Same"
 Bot
 
-[![Build Status](https://travis-ci.com/JordanPowell/discord-play-register.svg?branch=master)]()
+[![Build Status](https://travis-ci.com/JordanPowell/discord-play-register.svg?branch=master)](https://travis-ci.com/github/JordanPowell/discord-play-register)
 
