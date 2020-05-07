@@ -165,7 +165,8 @@ class QueryPropertyHandler(MentionMessageHandler):
 
     def get_all_responses(self, message):
         mention, remainder = split_by_first_mention(message)
-        attribute, game_name = remainder[len(self.keyword)+1:].split(' ')[:2]
+        found_keyword, remainder = self.split_string_by_keywords(remainder)
+        attribute, game_name = remainder.split(' ')[:2]
         game = lookup_game_by_name_or_alias(game_name)
         attribute_display = {
             'aliases': lambda z: ', '.join([alias for alias in z])
