@@ -1,2 +1,4 @@
 discord.py
 python-dotenv
+flake8==3.7.9
+pyflakes==2.1.0
