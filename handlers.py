@@ -11,6 +11,8 @@ load_dotenv()
 
 
 CLIENT_ID = os.getenv('CLIENT_ID')
+
+def get_message_handlers():
     return [
         WouldPlayHandler(),
         SameHandler(),
