@@ -11,6 +11,12 @@ class WouldPlay:
         self.recorded_at = time.time()
         self.expires_at = expires_at or (self.recorded_at + DEFAULT_EXPIRY_S)
 
+    def __str__(self):
+        return '<%s would play %s>' % (self.user, self.game)
+
+    def __repr__(self):
+        return str(self)
+
     @property
     def user(self):
         return self.player.name
@@ -18,6 +24,10 @@ class WouldPlay:
     @property
     def expired(self):
         return self.expires_at <= time.time()
+
+    @property
+    def second_recorded_at(self):
+        return int(self.recorded_at)
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -61,6 +71,13 @@ class DB:
             sorted_wps = self.get_would_plays()
 
         return sorted_wps[-1] if sorted_wps else []
+
+    def get_last_would_plays_at_same_time(self):
+        sorted_wps = self.get_would_plays()
+        if sorted_wps:
+            most_recent = sorted_wps[-1]
+            return [s for s in sorted_wps if s.second_recorded_at == most_recent.second_recorded_at]
+        return []
 
     def _prune_expired(self):
         # why can't I do self.prune(wp -> wp.expired)
