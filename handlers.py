@@ -159,7 +159,7 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     helper_command_list = [f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
 
     def get_all_responses_with_games(self, message, games):
-        would_plays = [db.record_would_play(message.author, game) for game in games]
+        would_plays = [db.record_would_play(message.author, game) for game in games if game]
         game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games if game]
         return ["%s would play %s" % (message.author.name, make_sentence_from_strings(game_and_players_strings))]
 
