@@ -54,14 +54,14 @@ class PlayRegisterBotTestCase(unittest.TestCase):
         super().setUp()
         self.old_games_db_file = os.environ.get('GAMES_DB_FILE')
         os.environ['GAMES_DB_FILE'] = 'test_known_games.json'
-            
+
         for game in get_known_games():
             db.clear_game(game)
         self.bot_responses = []
 
     def tearDown(self):
         if self.old_games_db_file is not None:
-            os.environ['GAMES_DB_FILE'] = self.old_games_db_file     
+            os.environ['GAMES_DB_FILE'] = self.old_games_db_file
 
     def _preprocess_test_discord_message(self, msg):
         return msg.replace('@bot', '<@!%s>' % os.getenv('CLIENT_ID'))
