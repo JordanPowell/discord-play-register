@@ -306,7 +306,7 @@ class AddHandler(MentionMessageHandler):
 
 
 def add_commands_to_command_helper_list():
-    return ['\n'.join(cmd for cmd in itertools.chain.from_iterable(handler.helper_command_list for handler in get_message_handlers()))]
+    return ['\n'.join(f"`{cmd.split('-')[0]}` - {cmd.split('-')[1]}" for cmd in itertools.chain.from_iterable(handler.helper_command_list for handler in get_message_handlers()))]
 
 
 class HelpHandler(MentionMessageHandler):
