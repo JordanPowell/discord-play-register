@@ -85,13 +85,13 @@ class GameExtractionMixin:
             for game_name in game_names:
                 if game_name:
                     game = lookup_game_by_name_or_alias(game_name)
-                    player_count = self.record_would_play(message, game)
+                    self.get_all_responses_with_game(message, game)
                     response_game_players.append("%s (%s)" % (game.name, len(game.get_available_players())))
 
             game_sentence = make_sentence_from_strings(response_game_players)
             return ["%s would play %s" % (message.author.name, game_sentence)]
         else:
-            return ["What? What would you play %s?" % (message.author.name)]
+            return self.get_all_responses_without_game(message)
 
 
 class MessageHandler:
@@ -107,10 +107,6 @@ class ContentBasedHandler(MessageHandler):
 
     def should_handle(self, message):
         return any(message.content.lower().startswith(f.lower()) for f in self.fragments)
-
-    def record_would_play(self, message, game):
-        would_play = db.record_would_play(message.author, game)
-        return would_play
 
 
 class MentionMessageHandler(MessageHandler):
@@ -140,7 +136,7 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
 
     def get_all_responses_with_game(self, message, game):
         would_play = db.record_would_play(message.author, game)
-        return ["%s would play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
+        return would_play
 
 
 class SameHandler(GameExtractionMixin, ContentBasedHandler):
@@ -157,15 +153,12 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
 
         for game in games:
             would_play = db.record_would_play(message.author, game)
-            messages += ["%s would also play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))]
+            messages += ["%s would also play %s (%s)" % (would_play.user, game, len(game.get_available_players()))]
         for game in games:
             messages += get_any_ready_messages(game)
         return messages
 
     def get_all_responses_with_game(self, message, game):
-        return self.get_all_responses_with_optional_game(message, game)
-
-    def get_all_responses_with_optional_game(self, message, game):
         last_would_play = db.get_last_would_play(game)
 
         if not last_would_play:
