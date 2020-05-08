@@ -1,0 +1,56 @@
+{
+    "CS": {
+        "aliases": [
+            "csgo",
+            "counterstrike",
+            "cs:go",
+            "inferno"
+        ],
+        "max_players": 5,
+        "min_players": 5
+    },
+    "League of Legends": {
+        "aliases": [
+            "league",
+            "lol",
+            "xlol"
+        ],
+        "max_players": 5,
+        "min_players": 2
+    },
+    "Rocket League": {
+        "aliases": [
+            "rl",
+            "3s",
+            "2s",
+            "car ball"
+        ],
+        "max_players": 3,
+        "min_players": 2
+    },
+    "Squad": {
+        "max_players": 1,
+        "min_players": 1
+    },
+    "Tabletop Simulator": {
+        "aliases": [
+            "tts"
+        ],
+        "max_players": 10,
+        "min_players": 2
+    },
+    "Test": {
+        "aliases": [
+            "tst"
+        ],
+        "max_players": 10000000,
+        "min_players": 1
+    },
+    "Valorant": {
+        "aliases": [
+            "valorant"
+        ],
+        "max_players": 5,
+        "min_players": 3
+    }
+}
