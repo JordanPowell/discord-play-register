@@ -37,13 +37,6 @@ class Game:
                     ','.join([create_mention(p) for p in players]),
                     self.name,
                     self.name,)]
-            else:
-                return ["Potentially ready to play with %s! %s would play %s.\n@ me with 'clear %s' to clear the players, or with 'ping %s' to @ the players and clear." % (
-                    len(players),
-                    ', '.join([p.name for p in players]),
-                    self.name,
-                    self.name,
-                    self.name)]
         return []
 
     def __str__(self):
@@ -70,7 +63,7 @@ def lookup_known_game_by_name_or_alias(name):
 def lookup_game_by_name_or_alias(name):
     # Name may contain extra junk, e.g. "I'd play cs later, after food" would mean name="cs later, after food"
     game = lookup_known_game_by_name_or_alias(name)
-    return game if game else Game(name=name)
+    return game if game else None
 
 
 def read_games_dict(json_filename=None):
