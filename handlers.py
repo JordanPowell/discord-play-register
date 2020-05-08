@@ -161,13 +161,11 @@ class StatusHandler(MentionMessageHandler):
 
     def get_all_responses(self, message):
         messages = ['Bot alive']
-        ready_messages = []
         for game in get_known_games():
             players = game.get_available_players()
             if players:
                 messages.append('%s has %s (%s)' % (game, len(players), ", ".join([player.name for player in players])))
-                ready_messages += get_any_ready_messages(game)
-        return ['\n'.join(messages + ready_messages)]
+        return ['\n'.join(messages)]
 
 
 class ClearHandler(GameExtractionMixin, MentionMessageHandler):
