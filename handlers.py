@@ -148,9 +148,9 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
 
 
 class SameHandler(GameExtractionMixin, ContentBasedHandler):
-    fragments = ['same', 'same to']
-    helper_command_list = [f"{fragments[0]} - Add your name to the list of players that would play the game(s) mentioned in the most recent \"I'd play\".",
-                           f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
+    fragments = ['same to', 'same']
+    helper_command_list = [f"{fragments[1]} - Add your name to the list of players that would play the game(s) mentioned in the most recent \"I'd play\".",
+                           f"{fragments[1]} <game> - Add your name to the list of players that would play <game>."]
 
     def get_all_responses_without_game(self, message):
         last_would_plays = db.get_last_would_plays_at_same_time()
