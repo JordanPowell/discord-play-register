@@ -314,5 +314,3 @@ class HelpHandler(MentionMessageHandler):
 
     def get_all_responses(self, message):
         return add_commands_to_command_helper_list()
-
-
