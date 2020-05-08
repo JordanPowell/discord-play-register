@@ -85,8 +85,8 @@ class GameExtractionMixin:
             for game_name in game_names:
                 if game_name:
                     game = lookup_game_by_name_or_alias(game_name)
-                    player_count = self.record_would_play_and_get_player_count(message, game)
-                    response_game_players.append("%s (that's %s)" % (game.name, player_count))
+                    player_count = self.record_would_play(message, game)
+                    response_game_players.append("%s (%s)" % (game.name, len(game.get_available_players())))
 
             game_sentence = make_sentence_from_strings(response_game_players)
             return ["%s would play %s" % (message.author.name, game_sentence)]
@@ -138,9 +138,9 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
         would_play = db.record_would_play(message.author, game)
         return ["%s would play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
 
-    def record_would_play_and_get_player_count(self, message, game):
+    def record_would_play(self, message, game):
         would_play = db.record_would_play(message.author, game)
-        return len(game.get_available_players())
+        return would_play
 
 
 class SameHandler(GameExtractionMixin, ContentBasedHandler):
