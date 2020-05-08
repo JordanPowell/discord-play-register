@@ -73,3 +73,4 @@ class TestStatus(PlayRegisterBotTestCase):
     def test_status_line_no_games(self):
         self.user_message('@bot status')
         self.assertNextBotMessagesContains('Bot alive')
+

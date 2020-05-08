@@ -1,7 +1,7 @@
 from db import db
 from utils import extract_remainder_after_fragments
 from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_game_by_name_or_alias, \
-    write_games_json_dict, read_games_json_dict
+    write_games_dict, read_games_dict
 from dotenv import load_dotenv
 import os
 
@@ -47,7 +47,7 @@ def get_game_name_or_alias_from_message(message):
                 return potential_name
 
 
-def default_game_json_template(game_name):
+def get_default_game_dict_representation(game_name):
     return {
         game_name:
             {
@@ -203,6 +203,7 @@ class QueryHandler(MentionMessageHandler):
 
 
 class AddHandler(MentionMessageHandler):
+    """ Called via '@bot add game <game>' or '@bot add <property> <game> <value>' """
     keywords = ['add']
     json_filename = os.path.join(os.path.dirname(__file__), 'known_games.json')
 
@@ -219,10 +220,10 @@ class AddHandler(MentionMessageHandler):
             if lookup_known_game_by_name_or_alias(new_game):
                 return ["That game already exists you absolute degenerate. Don't trigger me."]
             else:
-                new_game_dict = default_game_json_template(new_game)
-                known_games_dict = read_games_json_dict()
+                new_game_dict = get_default_game_dict_representation(new_game)
+                known_games_dict = read_games_dict()
                 known_games_dict.update(new_game_dict)
-                write_games_json_dict(known_games_dict)
+                write_games_dict(known_games_dict)
                 return ["Congratulations - %s has been added to the known games list! Fantastic work there comrade, give yourself a pat on the back!" % new_game]
         else:
             property, remainder = split_remainder[0], ' '.join(split_remainder[1:])
@@ -234,7 +235,7 @@ class AddHandler(MentionMessageHandler):
             game = lookup_game_by_name_or_alias(game_name)
             value = remainder[len(game_name)+1:]
 
-            known_games_dict = read_games_json_dict()
+            known_games_dict = read_games_dict()
             if property.lower() == 'alias':
                 known_games_dict[game.name]['aliases'] += [value]
             elif property.lower() in ['min_players', 'max_players']:
@@ -242,5 +243,5 @@ class AddHandler(MentionMessageHandler):
             else:
                 return ["Invalid property type"]
 
-            write_games_json_dict(known_games_dict)
+            write_games_dict(known_games_dict)
             return ["%s has been added to %s in %s" % (value, property, game.name)]

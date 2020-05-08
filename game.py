@@ -63,16 +63,16 @@ def lookup_game_by_name_or_alias(name):
     return game if game else Game(name=name)
 
 
-def read_games_json_dict(json_filename=os.path.join(os.path.dirname(__file__), 'known_games.json')):
+def read_games_dict(json_filename=os.path.join(os.path.dirname(__file__), 'known_games.json')):
     with open(json_filename) as json_file:
         return json.load(json_file)
 
 
-def write_games_json_dict(known_games_json, json_filename=os.path.join(os.path.dirname(__file__), 'known_games.json')):
+def write_games_dict(known_games_json, json_filename=os.path.join(os.path.dirname(__file__), 'known_games.json')):
     with open(json_filename, "w") as json_file:
         json.dump(known_games_json, json_file, sort_keys=True, indent=4)
 
 
 def get_known_games():
-    known_game_dict = read_games_json_dict()
+    known_game_dict = read_games_dict()
     return [KnownGame(name=name, **props) for name, props in known_game_dict.items()]
