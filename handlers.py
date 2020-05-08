@@ -1,6 +1,7 @@
 from db import db
 from utils import extract_remainder_after_fragments
-from game import lookup_game_by_name_or_alias, games
+from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_game_by_name_or_alias, \
+    write_games_dict, read_games_dict
 from dotenv import load_dotenv
 import os
 
@@ -26,6 +27,35 @@ def split_by_first_mention(message):
         return msg[:idx], msg[idx:].strip()
     else:
         return '', msg
+
+
+def message_starts_with_any_fragment(message, fragments):
+    return any(message.lower().startswith(query_game_fragment.lower())
+               for query_game_fragment in fragments)
+
+
+def message_pertains_to_all_games(message):
+    query_game_fragments = ['games', 'game', 'list', 'g']
+    return message_starts_with_any_fragment(message, query_game_fragments)
+
+
+def get_game_name_or_alias_from_message(message):
+    if lookup_game_by_name_or_alias(message):
+        game = lookup_game_by_name_or_alias(message)
+        for potential_name in [game.name] + game.aliases:
+            if message.lower().startswith(potential_name.lower()):
+                return potential_name
+
+
+def get_default_game_dict_representation(game_name):
+    return {
+        game_name:
+            {
+                'aliases': [],
+                'max_players': 5,
+                'min_players': 2
+            }
+    }
 
 
 def is_bot_mention(mention):
@@ -137,7 +167,7 @@ class StatusHandler(MentionMessageHandler):
     def get_all_responses(self, message):
         messages = ['Bot alive']
         ready_messages = []
-        for game in games:
+        for game in get_known_games():
             players = game.get_available_players()
             if players:
                 messages.append('%s has %s' % (game, len(players)))
@@ -181,23 +211,65 @@ class AccidentalRoleMentionHandler(MessageHandler):
         return ['It looks like you tried to @ me but might have accidentally selected the role instead']
 
 
-class QueryGameHandler(MentionMessageHandler):
-    keywords = ['query games']
-
-    def get_all_responses(self, message):
-        return ['\n'.join([game.name for game in games])]
-
-
-class QueryPropertyHandler(MentionMessageHandler):
+class QueryHandler(MentionMessageHandler):
     keywords = ['query']
 
     def get_all_responses(self, message):
         mention, remainder = split_by_first_mention(message)
         found_keyword, remainder = self.split_string_by_keywords(remainder)
-        attribute, game_name = remainder.split(' ')[:2]
-        game = lookup_game_by_name_or_alias(game_name)
-        attribute_display = {
-            'aliases': lambda z: ', '.join([alias for alias in z])
-        }
-        display_function = attribute_display.get(attribute, lambda x: str(x))
-        return ["%s: %s" % (attribute, display_function(getattr(game, attribute)))]
+
+        if message_pertains_to_all_games(remainder):
+            return ['\n'.join([game.name for game in get_known_games()])]
+        else:
+            attribute, game_name = remainder.split(' ')[:2]
+            game = lookup_game_by_name_or_alias(game_name)
+            attribute_display = {
+                'aliases': lambda z: ', '.join([alias for alias in z])
+            }
+            display_function = attribute_display.get(attribute, lambda x: str(x))
+            return ["%s: %s" % (attribute, display_function(getattr(game, attribute)))]
+
+
+class AddHandler(MentionMessageHandler):
+    """ Called via '@bot add game <game>' or '@bot add <property> <game> <value>' """
+    keywords = ['add']
+    json_filename = os.path.join(os.path.dirname(__file__), 'known_games.json')
+
+    def get_all_responses(self, message):
+        mention, remainder = split_by_first_mention(message)
+        found_keyword, remainder = self.split_string_by_keywords(remainder)
+        split_remainder = remainder.split(' ')
+        if len(split_remainder) == 1:
+            return ["Incorrect command: Try 'add game <game name>' or 'add <property> <game name> <value>"]
+
+        if message_pertains_to_all_games(split_remainder[0]):
+            new_game = ' '.join(split_remainder[1:])
+
+            if lookup_known_game_by_name_or_alias(new_game):
+                return ["That game already exists you absolute degenerate. Don't trigger me."]
+            else:
+                new_game_dict = get_default_game_dict_representation(new_game)
+                known_games_dict = read_games_dict()
+                known_games_dict.update(new_game_dict)
+                write_games_dict(known_games_dict)
+                return ["Congratulations - %s has been added to the known games list! Fantastic work there comrade, give yourself a pat on the back!" % new_game]
+        else:
+            property, remainder = split_remainder[0], ' '.join(split_remainder[1:])
+            if get_game_name_or_alias_from_message(remainder):
+                game_name = get_game_name_or_alias_from_message(remainder).lower()
+            else:
+                return ["Invalid game name/ alias"]
+
+            game = lookup_game_by_name_or_alias(game_name)
+            value = remainder[len(game_name)+1:]
+
+            known_games_dict = read_games_dict()
+            if property.lower() == 'alias':
+                known_games_dict[game.name]['aliases'] += [value]
+            elif property.lower() in ['min_players', 'max_players']:
+                known_games_dict[game.name][property] = int(value)
+            else:
+                return ["Invalid property type"]
+
+            write_games_dict(known_games_dict)
+            return ["%s has been added to %s in %s" % (value, property, game.name)]
