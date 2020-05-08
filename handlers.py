@@ -108,6 +108,10 @@ class ContentBasedHandler(MessageHandler):
     def should_handle(self, message):
         return any(message.content.lower().startswith(f.lower()) for f in self.fragments)
 
+    def record_would_play(self, message, game):
+        would_play = db.record_would_play(message.author, game)
+        return would_play
+
 
 class MentionMessageHandler(MessageHandler):
     keywords = []
@@ -137,10 +141,6 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     def get_all_responses_with_game(self, message, game):
         would_play = db.record_would_play(message.author, game)
         return ["%s would play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
-
-    def record_would_play(self, message, game):
-        would_play = db.record_would_play(message.author, game)
-        return would_play
 
 
 class SameHandler(GameExtractionMixin, ContentBasedHandler):
