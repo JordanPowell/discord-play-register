@@ -170,7 +170,7 @@ class StatusHandler(MentionMessageHandler):
         for game in get_known_games():
             players = game.get_available_players()
             if players:
-                messages.append('%s has %s %s' % (game, len(players), [player.name for player in players]))
+                messages.append('%s has %s (%s)' % (game, len(players), ", ".join([player.name for player in players])))
                 ready_messages += get_any_ready_messages(game)
         return ['\n'.join(messages + ready_messages)]
 
