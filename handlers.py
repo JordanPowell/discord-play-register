@@ -91,10 +91,13 @@ def is_bot_mention(mention):
 class GameExtractionMixin:
     multi_game_delimiter = '/'
 
-    def get_all_responses_without_game(self, message):
-        return []
-
     def get_all_responses_with_games(self, message, games):
+        responses = []
+        for game in games:
+            responses += self.get_all_responses_with_game(message, game) if game else []
+        return responses
+
+    def get_all_responses_without_game(self, message):
         return []
 
     def get_all_responses_with_game(self, message, game):
@@ -104,15 +107,12 @@ class GameExtractionMixin:
         plays = extract_remainder_after_fragments(self.fragments, message.content)
         game_names = plays.split(self.multi_game_delimiter)
         games = [lookup_game_by_name_or_alias(game_name) for game_name in game_names if game_name]
-
-        if len(games) > 1:
-            response = self.get_all_responses_with_games(message, games)
-        elif len(games) == 1:
-            response = self.get_all_responses_with_game(message, games[0])
+        responses = []
+        if games:
+            responses += self.get_all_responses_with_games(message, games)
         else:
-            response = self.get_all_responses_without_game(message)
-
-        return response
+            responses += self.get_all_responses_without_game(message)
+        return responses
 
 
 class MessageHandler:
