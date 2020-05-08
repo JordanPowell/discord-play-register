@@ -1,18 +1,13 @@
 from db import db
 from utils import extract_remainder_after_fragments
 from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_game_by_name_or_alias, \
-    write_games_dict, read_games_dict
+    write_games_dict, read_games_dict, create_mention
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
 CLIENT_ID = os.getenv('CLIENT_ID')
-
-
-def create_mention(player):
-    return '<@!%s>' % player.id
-
 
 def get_any_ready_messages(game):
     if game.is_ready_to_play:

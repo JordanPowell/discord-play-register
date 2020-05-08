@@ -2,6 +2,8 @@ from db import db
 import json
 import os
 
+def create_mention(player):
+    return '<@!%s>' % player.id
 
 class Game:
     def __init__(self, name, aliases=[], min_players=0, max_players=100, known=False):
@@ -29,11 +31,10 @@ class Game:
         players = self.get_available_players()
         if len(players) >= self.min_players:
             if len(players) >= self.max_players:
-                return ["Ready to play! %s would play %s.\n@ me with 'clear %s' to clear the players, or with 'ping %s' to @ the players and clear." % (
-                    ', '.join([p.name for p in players]),
+                return ["%s are ready to play %s!\n@ me with 'clear %s' to clear the players." % (
+                    ','.join([create_mention(p) for p in players]),
                     self.name,
-                    self.name,
-                    self.name)]
+                    self.name,)]
             else:
                 return ["Potentially ready to play with %s! %s would play %s.\n@ me with 'clear %s' to clear the players, or with 'ping %s' to @ the players and clear." % (
                     len(players),
