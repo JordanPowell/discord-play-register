@@ -1,4 +1,4 @@
-from game import lookup_game_by_name_or_alias, games
+from game import lookup_game_by_name_or_alias, get_known_games
 import os
 from db import db
 import unittest
@@ -52,7 +52,7 @@ def create_discord_message(content, *, channel, **kwargs):
 class PlayRegisterBotTestCase(unittest.TestCase):
     def setUp(self):
         super().setUp()
-        for game in games:
+        for game in get_known_games():
             db.clear_game(game)
         self.bot_responses = []
 
