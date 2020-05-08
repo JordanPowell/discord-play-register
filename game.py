@@ -2,8 +2,10 @@ from db import db
 import json
 import os
 
+
 def create_mention(player):
     return '<@!%s>' % player.id
+
 
 class Game:
     def __init__(self, name, aliases=[], min_players=0, max_players=100, known=False):
