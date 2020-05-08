@@ -1,17 +1,16 @@
 from db import db
 from utils import extract_remainder_after_fragments
 from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_game_by_name_or_alias, \
-    write_games_dict, read_games_dict
+    write_games_dict, read_games_dict, create_mention
 from dotenv import load_dotenv
 import itertools
 import os
 
+
 load_dotenv()
 
+
 CLIENT_ID = os.getenv('CLIENT_ID')
-
-
-def get_message_handlers():
     return [
         WouldPlayHandler(),
         SameHandler(),
@@ -188,13 +187,11 @@ class StatusHandler(MentionMessageHandler):
 
     def get_all_responses(self, message):
         messages = ['Bot alive']
-        ready_messages = []
         for game in get_known_games():
             players = game.get_available_players()
             if players:
-                messages.append('%s has %s' % (game, len(players)))
-                ready_messages += get_any_ready_messages(game)
-        return ['\n'.join(messages + ready_messages)]
+                messages.append('%s has %s (%s)' % (game, len(players), ", ".join([player.name for player in players])))
+        return ['\n'.join(messages)]
 
 
 class ClearHandler(GameExtractionMixin, MentionMessageHandler):
@@ -291,7 +288,7 @@ class AddHandler(MentionMessageHandler):
                 return ["Invalid game name/ alias"]
 
             game = lookup_game_by_name_or_alias(game_name)
-            value = remainder[len(game_name)+1:]
+            value = remainder[len(game_name) + 1:]
 
             known_games_dict = read_games_dict()
             if property.lower() == 'alias':
