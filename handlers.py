@@ -39,6 +39,14 @@ def message_pertains_to_all_games(message):
     return message_starts_with_any_fragment(message, query_game_fragments)
 
 
+def get_game_name_or_alias_from_message(message):
+    if lookup_game_by_name_or_alias(message):
+        game = lookup_game_by_name_or_alias(message)
+        for potential_name in [game.name] + game.aliases:
+            if message.lower().startswith(potential_name.lower()):
+                return potential_name
+
+
 def default_game_json_template(game_name):
     return {
         game_name:
@@ -202,11 +210,11 @@ class AddHandler(MentionMessageHandler):
         mention, remainder = split_by_first_mention(message)
         found_keyword, remainder = self.split_string_by_keywords(remainder)
         split_remainder = remainder.split(' ')
+        if len(split_remainder) == 1:
+            return ["Incorrect command: Try 'add game <game name>' or 'add <property> <game name> <value>"]
+
         if message_pertains_to_all_games(split_remainder[0]):
-            if len(split_remainder) == 1:
-                return ["Incorrect command: Try 'add game <game name>'"]
-            else:
-                new_game = ' '.join(split_remainder[1:])
+            new_game = ' '.join(split_remainder[1:])
 
             if lookup_known_game_by_name_or_alias(new_game):
                 return ["That game already exists you absolute degenerate. Don't trigger me."]
@@ -217,5 +225,22 @@ class AddHandler(MentionMessageHandler):
                 write_games_json_dict(known_games_dict)
                 return ["Congratulations - %s has been added to the known games list! Fantastic work there comrade, give yourself a pat on the back!" % new_game]
         else:
-            # TODO: "add <property> <game name> <value>"
-            pass
+            property, remainder = split_remainder[0], ' '.join(split_remainder[1:])
+            if get_game_name_or_alias_from_message(remainder):
+                game_name = get_game_name_or_alias_from_message(remainder).lower()
+            else:
+                return ["Invalid game name/ alias"]
+
+            game = lookup_game_by_name_or_alias(game_name)
+            value = remainder[len(game_name)+1:]
+
+            known_games_dict = read_games_json_dict()
+            if property.lower() == 'alias':
+                known_games_dict[game.name]['aliases'] += [value]
+            elif property.lower() in ['min_players', 'max_players']:
+                known_games_dict[game.name][property] = int(value)
+            else:
+                return ["Invalid property type"]
+
+            write_games_json_dict(known_games_dict)
+            return ["%s has been added to %s in %s" % (value, property, game.name)]
