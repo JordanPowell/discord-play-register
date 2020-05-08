@@ -5,9 +5,12 @@ from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_gam
 from dotenv import load_dotenv
 import os
 
+
 load_dotenv()
 
+
 CLIENT_ID = os.getenv('CLIENT_ID')
+
 
 def get_any_ready_messages(game):
     if game.is_ready_to_play:
@@ -254,7 +257,7 @@ class AddHandler(MentionMessageHandler):
                 return ["Invalid game name/ alias"]
 
             game = lookup_game_by_name_or_alias(game_name)
-            value = remainder[len(game_name)+1:]
+            value = remainder[len(game_name) + 1:]
 
             known_games_dict = read_games_dict()
             if property.lower() == 'alias':

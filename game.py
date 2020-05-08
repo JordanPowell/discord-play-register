@@ -66,6 +66,7 @@ def lookup_known_game_by_name_or_alias(name):
         if game.loosely_matches(name):
             return game
 
+
 def lookup_game_by_name_or_alias(name):
     # Name may contain extra junk, e.g. "I'd play cs later, after food" would mean name="cs later, after food"
     game = lookup_known_game_by_name_or_alias(name)
