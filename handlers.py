@@ -79,7 +79,7 @@ class GameExtractionMixin:
     def get_all_responses(self, message):
         plays = extract_remainder_after_fragments(self.fragments, message.content)
         game_names = plays.split(self.multi_game_delimiter)
-        
+
         response_game_players = []
         if any(game_names):
             for game_name in game_names:
