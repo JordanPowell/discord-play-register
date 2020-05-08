@@ -3,11 +3,27 @@ from utils import extract_remainder_after_fragments
 from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_game_by_name_or_alias, \
     write_games_json_dict, read_games_json_dict
 from dotenv import load_dotenv
+import itertools
 import os
 
 load_dotenv()
 
 CLIENT_ID = os.getenv('CLIENT_ID')
+
+
+def get_message_handlers():
+    return [
+        WouldPlayHandler(),
+        SameHandler(),
+        ClearHandler(),
+        CancelHandler(),
+        PingHandler(),
+        AccidentalRoleMentionHandler(),
+        StatusHandler(),
+        QueryHandler(),
+        AddHandler(),
+        HelpHandler()
+    ]
 
 
 def create_mention(player):
@@ -83,6 +99,8 @@ class GameExtractionMixin:
 
 
 class MessageHandler:
+    helper_command_list = []
+
     def should_handle(self, message):
         raise NotImplementedError()
 
@@ -121,6 +139,7 @@ class MentionMessageHandler(MessageHandler):
 
 class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly"]
+    helper_command_list = [f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
 
     def get_all_responses_with_game(self, message, game):
         would_play = db.record_would_play(message.author, game)
@@ -128,7 +147,9 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
 
 
 class SameHandler(GameExtractionMixin, ContentBasedHandler):
-    fragments = ['same to', 'same']
+    fragments = ['same', 'same to']
+    helper_command_list = [f"{fragments[0]} - Add your name to the list of players that would play the game(s) mentioned in the most recent \"I'd play\".",
+                           f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
 
     def get_all_responses_without_game(self, message):
         last_would_plays = db.get_last_would_plays_at_same_time()
@@ -163,6 +184,7 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
 
 class StatusHandler(MentionMessageHandler):
     keywords = ['status']
+    helper_command_list = [f"@BOT {keywords[0]} - allow the user to determine the status of games (number of players etc.)."]
 
     def get_all_responses(self, message):
         messages = ['Bot alive']
@@ -177,6 +199,7 @@ class StatusHandler(MentionMessageHandler):
 
 class ClearHandler(GameExtractionMixin, MentionMessageHandler):
     keywords = ['clear']
+    helper_command_list = [f"@BOT {keywords[0]} <game> - clear all names from the <game>'s' \"I'd play\" list."]
 
     def get_all_responses_with_game(self, message, game):
         if game:
@@ -188,6 +211,7 @@ class ClearHandler(GameExtractionMixin, MentionMessageHandler):
 
 class CancelHandler(MentionMessageHandler):
     keywords = ['cancel']
+    helper_command_list = [f"@BOT {keywords[0]} - Removes your name from all \"I'd play\" lists."]
 
     def get_all_responses(self, message):
         db.cancel_would_plays(message.author)
@@ -196,6 +220,7 @@ class CancelHandler(MentionMessageHandler):
 
 class PingHandler(GameExtractionMixin, MentionMessageHandler):
     keywords = ['ping', 'p']
+    helper_command_list = [f"@BOT {keywords[0]} <game> - Ping all players that would currently play <game> and refresh the list for <game>."]
 
     def get_all_responses_with_game(self, message, game):
         players = game.get_players_for_next_game()
@@ -213,6 +238,8 @@ class AccidentalRoleMentionHandler(MessageHandler):
 
 class QueryHandler(MentionMessageHandler):
     keywords = ['query']
+    helper_command_list = [f"@BOT {keywords[0]} games - Determine what games are in the known_games list.",
+                           f"@BOT {keywords[0]} <property> <game> - Determine the <property> value for <game> (i.e. min_players)."]
 
     def get_all_responses(self, message):
         mention, remainder = split_by_first_mention(message)
@@ -233,6 +260,9 @@ class QueryHandler(MentionMessageHandler):
 class AddHandler(MentionMessageHandler):
     keywords = ['add']
     json_filename = os.path.join(os.path.dirname(__file__), 'known_games.json')
+
+    helper_command_list = [f"@BOT {keywords[0]} <games> - Add <game> to the known_games list.",
+                           f"@BOT {keywords[0]} <property> <game> <value> - Add <value> to the <property> of <game> (Edits min/max_players)."]
 
     def get_all_responses(self, message):
         mention, remainder = split_by_first_mention(message)
@@ -272,3 +302,16 @@ class AddHandler(MentionMessageHandler):
 
             write_games_json_dict(known_games_dict)
             return ["%s has been added to %s in %s" % (value, property, game.name)]
+
+
+def add_commands_to_command_helper_list():
+    return ['\n'.join(cmd for cmd in itertools.chain.from_iterable(handler.helper_command_list for handler in get_message_handlers()))]
+
+
+class HelpHandler(MentionMessageHandler):
+    keywords = ['help', 'h', '?']
+
+    def get_all_responses(self, message):
+        return add_commands_to_command_helper_list()
+
+
