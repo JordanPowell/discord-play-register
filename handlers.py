@@ -20,6 +20,14 @@ def get_any_ready_messages(game):
     return []
 
 
+def replace_last_occurence(original, string_to_replace, replace_with):
+    return replace_with.join(original.rsplit(string_to_replace, 1))
+
+
+def make_sentence_from_strings(string_list):
+    return replace_last_occurence(", ".join(string_list), ", ", " and ")
+
+
 def split_by_first_mention(message):
     msg = message.content
     if msg.startswith('<@'):
@@ -70,16 +78,20 @@ class GameExtractionMixin:
 
     def get_all_responses(self, message):
         plays = extract_remainder_after_fragments(self.fragments, message.content)
-        responses = []
         game_names = plays.split(self.multi_game_delimiter)
+        
+        response_game_players = []
         if any(game_names):
             for game_name in game_names:
                 if game_name:
                     game = lookup_game_by_name_or_alias(game_name)
-                    responses += self.get_all_responses_with_game(message, game)
+                    player_count = self.record_would_play_and_get_player_count(message, game)
+                    response_game_players.append("%s (that's %s)" % (game.name, player_count))
+
+            game_sentence = make_sentence_from_strings(response_game_players)
+            return ["%s would play %s" % (message.author.name, game_sentence)]
         else:
-            responses += self.get_all_responses_without_game(message)
-        return responses
+            return ["What? What would you play %s?" % (message.author.name)]
 
 
 class MessageHandler:
@@ -125,6 +137,10 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     def get_all_responses_with_game(self, message, game):
         would_play = db.record_would_play(message.author, game)
         return ["%s would play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
+
+    def record_would_play_and_get_player_count(self, message, game):
+        would_play = db.record_would_play(message.author, game)
+        return len(game.get_available_players())
 
 
 class SameHandler(GameExtractionMixin, ContentBasedHandler):
