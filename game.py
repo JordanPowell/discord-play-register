@@ -62,8 +62,8 @@ def lookup_known_game_by_name_or_alias(name):
 def lookup_game_by_name_or_alias(name):
     # Name may contain extra junk, e.g. "I'd play cs later, after food" would mean name="cs later, after food"
     game = lookup_known_game_by_name_or_alias(name)
-    return game if game else Game(name=name)
-
+    return game if game else None
+    
 
 def read_games_dict(json_filename=os.path.join(os.path.dirname(__file__), 'known_games.json')):
     with open(json_filename) as json_file:

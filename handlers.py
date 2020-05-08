@@ -71,7 +71,8 @@ class GameExtractionMixin:
             for game_name in game_names:
                 if game_name:
                     game = lookup_game_by_name_or_alias(game_name)
-                    responses += self.get_all_responses_with_game(message, game)
+                    if game:
+                        responses += self.get_all_responses_with_game(message, game)
         else:
             responses += self.get_all_responses_without_game(message)
         return responses
