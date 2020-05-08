@@ -38,6 +38,14 @@ def get_any_ready_messages(game):
     return []
 
 
+def replace_last_occurence(original, string_to_replace, replace_with):
+    return replace_with.join(original.rsplit(string_to_replace, 1))
+
+
+def make_sentence_from_strings(string_list):
+    return replace_last_occurence(", ".join(string_list), ", ", " and ")
+
+
 def split_by_first_mention(message):
     msg = message.content
     if msg.startswith('<@'):
@@ -83,19 +91,25 @@ def is_bot_mention(mention):
 class GameExtractionMixin:
     multi_game_delimiter = '/'
 
+    def get_all_responses_with_games(self, message, games):
+        responses = []
+        for game in games:
+            responses += self.get_all_responses_with_game(message, game) if game else []
+        return responses
+
     def get_all_responses_without_game(self, message):
+        return []
+
+    def get_all_responses_with_game(self, message, game):
         return []
 
     def get_all_responses(self, message):
         plays = extract_remainder_after_fragments(self.fragments, message.content)
-        responses = []
         game_names = plays.split(self.multi_game_delimiter)
-        if any(game_names):
-            for game_name in game_names:
-                if game_name:
-                    game = lookup_game_by_name_or_alias(game_name)
-                    if game:
-                        responses += self.get_all_responses_with_game(message, game)
+        games = [lookup_game_by_name_or_alias(game_name) for game_name in game_names if game_name]
+        responses = []
+        if games:
+            responses += self.get_all_responses_with_games(message, games)
         else:
             responses += self.get_all_responses_without_game(message)
         return responses
@@ -146,7 +160,12 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
 
     def get_all_responses_with_game(self, message, game):
         would_play = db.record_would_play(message.author, game)
-        return ["%s would play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
+        return ["%s would play %s (%s)" % (would_play.user, game, len(game.get_available_players()))]
+
+    def get_all_responses_with_games(self, message, games):
+        would_plays = [db.record_would_play(message.author, game) for game in games]
+        game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games]
+        return ["%s would play %s" % (message.author.name, make_sentence_from_strings(game_and_players_strings))]
 
 
 class SameHandler(GameExtractionMixin, ContentBasedHandler):
@@ -165,15 +184,12 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
 
         for game in games:
             would_play = db.record_would_play(message.author, game)
-            messages += ["%s would also play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))]
+            messages += ["%s would also play %s (%s)" % (would_play.user, game, len(game.get_available_players()))]
         for game in games:
             messages += get_any_ready_messages(game)
         return messages
 
     def get_all_responses_with_game(self, message, game):
-        return self.get_all_responses_with_optional_game(message, game)
-
-    def get_all_responses_with_optional_game(self, message, game):
         last_would_play = db.get_last_would_play(game)
 
         if not last_would_play:
@@ -182,7 +198,7 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
         game = game or last_would_play.game
         would_play = db.record_would_play(message.author, game)
 
-        return ["%s would also play %s (that's %s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
+        return ["%s would also play %s (%s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
 
 
 class StatusHandler(MentionMessageHandler):
