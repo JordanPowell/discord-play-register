@@ -158,6 +158,9 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly"]
     helper_command_list = [f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
 
+    def get_all_responses_without_game(self, message):
+        return [TextResponse(message.channel, f"What? What would you play {message.author.name}?")]
+
     def get_all_responses_with_games(self, message, games):
         would_plays = [db.record_would_play(message.author, game) for game in games if game]
         game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games if game]
