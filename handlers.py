@@ -161,7 +161,7 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     def get_all_responses_with_games(self, message, games):
         would_plays = [db.record_would_play(message.author, game) for game in games if game]
         game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games if game]
-        return ["%s would play %s" % (message.author.name, make_sentence_from_strings(game_and_players_strings))]
+        return ["%s would play %s" % (message.author.display_name, make_sentence_from_strings(game_and_players_strings))]
 
 
 class SameHandler(GameExtractionMixin, ContentBasedHandler):
@@ -180,7 +180,7 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
 
         for game in games:
             would_play = db.record_would_play(message.author, game)
-            messages += ["%s would also play %s (%s)" % (would_play.user, game, len(game.get_available_players()))]
+            messages += ["%s would also play %s (%s)" % (message.author.display_name, game, len(game.get_available_players()))]
         for game in games:
             messages += get_any_ready_messages(game)
         return messages
@@ -194,7 +194,7 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
         game = game or last_would_play.game
         would_play = db.record_would_play(message.author, game)
 
-        return ["%s would also play %s (%s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
+        return ["%s would also play %s (%s)" % (message.author.display_name, game, len(game.get_available_players()))] + get_any_ready_messages(game)
 
 
 class StatusHandler(MentionMessageHandler):
@@ -206,7 +206,7 @@ class StatusHandler(MentionMessageHandler):
         for game in get_known_games():
             players = game.get_available_players()
             if players:
-                messages.append('%s has %s (%s)' % (game, len(players), ", ".join([player.name for player in players])))
+                messages.append('%s has %s (%s)' % (game, len(players), ", ".join([player.display_name for player in players])))
         return ['\n'.join(messages)]
 
 
