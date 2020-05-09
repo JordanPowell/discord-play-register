@@ -2,6 +2,7 @@ from db import db
 from utils import extract_remainder_after_fragments
 from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_game_by_name_or_alias, \
     write_games_dict, read_games_dict, create_mention
+from response import TextResponse
 from dotenv import load_dotenv
 import itertools
 import os
@@ -164,7 +165,7 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     def get_all_responses_with_games(self, message, games):
         would_plays = [db.record_would_play(message.author, game) for game in games if game]
         game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games if game]
-        return ["%s would play %s" % (message.author.name, make_sentence_from_strings(game_and_players_strings))]
+        return [TextResponse(message.channel, "%s would play %s" % (message.author.name, make_sentence_from_strings(game_and_players_strings)))]
 
 
 class SameHandler(GameExtractionMixin, ContentBasedHandler):
