@@ -2,11 +2,9 @@
 class Response:
     def __init__(self, channel, *args, **kwargs):
         self.channel = channel
-        
         self.in_response_to_message = kwargs.get('message')
-        self.mention = kwargs.get('users_to_mention')
 
-    async def send(self):
+    def send(self):
         raise NotImplementedError
 
     def __str__(self):
@@ -24,7 +22,7 @@ class ReactionResponse(Response):
 
 class TextResponse(Response):
     def __init__(self, channel, response_text, *args, **kwargs):
-        self.response_text = response_text
+        self._response_text = response_text
         super().__init__(channel, *args, **kwargs)
 
     def send(self):
@@ -32,4 +30,4 @@ class TextResponse(Response):
 
     @property
     def response(self):
-        return self.response_text
+        return self._response_text
