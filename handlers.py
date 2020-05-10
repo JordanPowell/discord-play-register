@@ -179,11 +179,11 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
         messages = []
         games = set([lwp.game for lwp in last_would_plays])
 
-        for game in games:
-            would_play = db.record_would_play(message.author, game)
-            messages += ["%s would also play %s (%s)" % (message.author.display_name, game, len(game.get_available_players()))]
+        messages += self.get_all_responses_with_games(message, games)
+        
         for game in games:
             messages += get_any_ready_messages(game)
+        
         return messages
 
     def get_all_responses_with_game(self, message, game):
@@ -196,6 +196,13 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
         would_play = db.record_would_play(message.author, game)
 
         return ["%s would also play %s (%s)" % (message.author.display_name, game, len(game.get_available_players()))] + get_any_ready_messages(game)
+
+    def get_all_responses_with_games(self, message, games):
+        last_would_plays_for_listed_games = set(db.get_last_would_play(game).game for game in games)
+
+        would_plays = [db.record_would_play(message.author, game) for game in last_would_plays_for_listed_games]
+        game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in last_would_plays_for_listed_games]
+        return ["%s would also play %s" % (message.author.display_name, make_sentence_from_strings(game_and_players_strings))]
 
 
 class StatusHandler(MentionMessageHandler):
