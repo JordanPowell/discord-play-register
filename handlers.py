@@ -180,10 +180,10 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
         games = set([lwp.game for lwp in last_would_plays])
 
         messages += self.get_all_responses_with_games(message, games)
-        
+
         for game in games:
             messages += get_any_ready_messages(game)
-        
+
         return messages
 
     def get_all_responses_with_game(self, message, game):
