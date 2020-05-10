@@ -109,6 +109,7 @@ class GameExtractionMixin:
         games = [lookup_game_by_name_or_alias(game_name) for game_name in game_names if game_name]
         responses = []
         if games:
+            games = [game for game in games if game]
             responses += self.get_all_responses_with_games(message, games)
         else:
             responses += self.get_all_responses_without_game(message)
@@ -159,8 +160,8 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     helper_command_list = [f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
 
     def get_all_responses_with_games(self, message, games):
-        would_plays = [db.record_would_play(message.author, game) for game in games if game]
-        game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games if game]
+        would_plays = [db.record_would_play(message.author, game) for game in games]
+        game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games]
         return ["%s would play %s" % (message.author.display_name, make_sentence_from_strings(game_and_players_strings))]
 
 
