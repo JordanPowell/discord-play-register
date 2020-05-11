@@ -12,7 +12,7 @@ class WouldPlay:
         self.expires_at = expires_at or (self.recorded_at + DEFAULT_EXPIRY_S)
 
     def __str__(self):
-        return '<%s would play %s>' % (self.user, self.game)
+        return '<%s would play %s (recorded at: %s)>' % (self.user, self.game, self.recorded_at)
 
     def __repr__(self):
         return str(self)
@@ -48,8 +48,13 @@ class DB:
             raise RuntimeError('Cannot record for a game with no name')
         self._prune_expired()
         wp = WouldPlay(player=player, game=game)
-        self._store.add(wp)
+        if wp not in self._store:
+            self._store.add(wp)
+        else:
+            self._store.remove(wp)
+            self._store.add(wp)
         return wp
+
 
     def cancel_would_plays(self, player):
         self._store = set([wp for wp in self._store if wp.player != player])
@@ -73,6 +78,7 @@ class DB:
         return sorted_wps[-1] if sorted_wps else []
 
     def get_last_would_plays_at_same_time(self):
+        self._print_db()
         sorted_wps = self.get_would_plays()
         if sorted_wps:
             most_recent = sorted_wps[-1]
@@ -82,9 +88,16 @@ class DB:
     def _prune_expired(self):
         # why can't I do self.prune(wp -> wp.expired)
         self._store = set([wp for wp in self._store if not wp.expired])
+    
+    def _print_db(self):
+        for x in self._store:
+            print(x)
 
     def clear_game(self, game):
         self._store = set([wp for wp in self._store if wp.game.name != game.name])
+
+    def __str__(self):
+        return self._store
 
 
 db = DB()
