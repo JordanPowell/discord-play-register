@@ -78,7 +78,6 @@ class DB:
         return sorted_wps[-1] if sorted_wps else []
 
     def get_last_would_plays_at_same_time(self):
-        self._print_db()
         sorted_wps = self.get_would_plays()
         if sorted_wps:
             most_recent = sorted_wps[-1]
@@ -95,9 +94,5 @@ class DB:
 
     def clear_game(self, game):
         self._store = set([wp for wp in self._store if wp.game.name != game.name])
-
-    def __str__(self):
-        return self._store
-
 
 db = DB()
