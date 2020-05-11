@@ -27,10 +27,6 @@ def get_message_handlers():
     ]
 
 
-def create_mention(player):
-    return '<@!%s>' % player.id
-
-
 def get_any_ready_messages(game):
     if game.is_ready_to_play:
         return game.get_ready_messages()
@@ -159,7 +155,8 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     helper_command_list = [f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
 
     def get_all_responses_with_games(self, message, games):
-        would_plays = [db.record_would_play(message.author, game) for game in games]
+        for game in games:
+            db.record_would_play(message.author, game)
         game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games]
         return ["%s would play %s" % (message.author.display_name, make_sentence_from_strings(game_and_players_strings))]
 

@@ -55,7 +55,6 @@ class DB:
             self._store.add(wp)
         return wp
 
-
     def cancel_would_plays(self, player):
         self._store = set([wp for wp in self._store if wp.player != player])
 
@@ -87,12 +86,13 @@ class DB:
     def _prune_expired(self):
         # why can't I do self.prune(wp -> wp.expired)
         self._store = set([wp for wp in self._store if not wp.expired])
-    
+
     def _print_db(self):
         for x in self._store:
             print(x)
 
     def clear_game(self, game):
         self._store = set([wp for wp in self._store if wp.game.name != game.name])
+
 
 db = DB()
