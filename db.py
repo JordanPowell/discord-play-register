@@ -48,11 +48,9 @@ class DB:
             raise RuntimeError('Cannot record for a game with no name')
         self._prune_expired()
         wp = WouldPlay(player=player, game=game)
-        if wp not in self._store:
-            self._store.add(wp)
-        else:
+        if wp in self._store:
             self._store.remove(wp)
-            self._store.add(wp)
+        self._store.add(wp)
         return wp
 
     def cancel_would_plays(self, player):
