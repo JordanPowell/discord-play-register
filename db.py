@@ -5,14 +5,18 @@ DEFAULT_EXPIRY_S = 60 * 60 * 4
 
 
 class WouldPlay:
-    def __init__(self, player, game, expires_at=None):
+    def __init__(self, player, game, for_time=None, expires_at=None):
         self.player = player
         self.game = game
         self.recorded_at = time.time()
-        self.expires_at = expires_at or (self.recorded_at + DEFAULT_EXPIRY_S)
+        self.for_time = for_time
+        if self.for_time:
+            self.expires_at = self.for_time + DEFAULT_EXPIRY_S
+        else:
+            self.expires_at = expires_at or (self.recorded_at + DEFAULT_EXPIRY_S)
 
     def __str__(self):
-        return '<%s would play %s (recorded at: %s)>' % (self.user, self.game, self.recorded_at)
+        return '<%s would play %s (for time: %s, recorded at: %s)>' % (self.user, self.game, self.for_time, self.recorded_at)
 
     def __repr__(self):
         return str(self)
