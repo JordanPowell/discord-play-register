@@ -16,8 +16,8 @@ def extract_remainder_after_fragments(fragments, content):
 def extract_time(content):
     time_specifiers = ["@", "at"]
     time_specifiers_regex = "|".join(time_specifiers)
-    r = re.compile(fr'(?:{time_specifiers_regex}) (\d(?: mins| minutes)*)')
+    r = re.compile(fr"(?:{time_specifiers_regex}) (\d(?::[0-5]\d)*)")
     match = r.search(content.lower())
     if match is not None:
-        return match.group(1)
+        return match.groups(1)
     return None
