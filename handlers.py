@@ -101,7 +101,7 @@ class GameExtractionMixin:
     def get_all_responses(self, message):
         plays = extract_remainder_after_fragments(self.fragments, message.content)
         game_names = plays.split(self.multi_game_delimiter)
-        games = [lookup_game_by_name_or_alias(game_name) for game_name in game_names if game_name]
+        games = [lookup_game_by_name_or_alias(game_name) for game_name in game_names if lookup_game_by_name_or_alias(game_name)]
         responses = []
         if games:
             games = [game for game in games if game]
