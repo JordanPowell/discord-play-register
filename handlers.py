@@ -151,7 +151,7 @@ class MentionMessageHandler(MessageHandler):
 
 
 class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
-    fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’dplay", "I’dpaly", "same to", "same"]
+    fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly", "same to", "same"]
     helper_command_list = [f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
 
     def get_all_responses_with_games(self, message, games):
