@@ -11,7 +11,6 @@ class WouldPlay:
         self.game = game
         self.recorded_at = time.time()
         self.for_time = for_time
-        print(self.for_time)
         if self.for_time:
             self.expires_at = self.for_time + DEFAULT_EXPIRY_S
         else:
