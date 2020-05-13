@@ -1,5 +1,5 @@
 from db import db
-from utils import extract_remainder_after_fragments
+from utils import extract_remainder_after_fragments, extract_time
 from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_game_by_name_or_alias, \
     write_games_dict, read_games_dict, create_mention
 from dotenv import load_dotenv
@@ -155,8 +155,9 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     helper_command_list = [f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
 
     def get_all_responses_with_games(self, message, games):
+        for_time = extract_time(message.content)
         for game in games:
-            db.record_would_play(message.author, game)
+            db.record_would_play(message.author, game, for_time)
         game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games]
         messages = ["%s would play %s" % (message.author.display_name, make_sentence_from_strings(game_and_players_strings))]
         for game in games:
