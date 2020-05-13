@@ -147,6 +147,9 @@ class TestTimeUtils(UtilsTestCase):
         self.assert_format_time_string("05:00pm", "05:00pm")
         self.assert_format_time_string("5:00am", "05:00am")
         self.assert_format_time_string("05:00am", "05:00am")
+        self.assert_format_time_string("16:00pm", "16:00pm")
+        self.assert_format_time_string("16", "16:00pm")
+        self.assert_format_time_string("16pm", "16:00pm")
 
     def test_extract_time(self):
         today = datetime.today()

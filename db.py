@@ -92,17 +92,17 @@ class DB:
             return [s for s in sorted_wps if s.second_recorded_at == most_recent.second_recorded_at]
         return []
 
-    def get_ready_players_for_game(self, game):
-        return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and ((wp.for_time is None) or (wp.for_time < time.time())))]
-
-    def get_unready_players_for_game(self, game):
-        return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and (wp.for_time is not None) and (wp.for_time > time.time()))]
-
     def get_ready_would_plays_for_game(self, game):
         return [wp for wp in self.get_would_plays() if ((wp.game.name == game.name) and (wp.for_time is None))]
 
+    def get_ready_players_for_game(self, game):
+        return [wp.player for wp in self.get_ready_would_plays_for_game(game)]
+
     def get_unready_would_plays_for_game(self, game):
         return [wp for wp in self.get_would_plays() if ((wp.game.name == game.name) and (wp.for_time is not None) and (wp.for_time > time.time()))]
+
+    def get_unready_players_for_game(self, game):
+        return [wp.player for wp in self.get_unready_would_plays_for_game(game)]
 
     def get_would_plays_ready_at_time(self, game, ftime):
         would_plays = self.get_would_plays_for_game(game)
