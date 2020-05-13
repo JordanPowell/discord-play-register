@@ -1,14 +1,9 @@
 import time
 from time import localtime, strftime
+from utils import epoch_time_to_digital
+
 
 DEFAULT_EXPIRY_S = 60 * 60 * 4
-
-
-def epoch_time_to_digital(ftime):
-    if ftime:
-        struct_time = localtime(ftime)
-        return strftime("%H:%M", struct_time)
-    return None
 
 
 class WouldPlay:
@@ -105,9 +100,12 @@ class DB:
     def get_unready_players_for_game(self, game):
         return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and (wp.for_time is not None) and (wp.for_time > time.time()))]
 
+    def get_unready_would_plays_for_game(self, game):
+        return [wp for wp in self.get_would_plays() if ((wp.game.name == game.name) and (wp.for_time is not None) and (wp.for_time > time.time()))]
+
     def get_would_plays_ready_at_time(self, game, ftime):
         would_plays = self.get_would_plays_for_game(game)
-        return [wp for wp in would_plays if (wp.expires_at > ftime) and ((wp.for_time is None) or (wp.for_time < ftime))]
+        return [wp for wp in would_plays if ((wp.expires_at > ftime) and ((wp.for_time is None) or (wp.for_time <= ftime)))]
 
     def _prune_expired(self):
         # why can't I do self.prune(wp -> wp.expired)

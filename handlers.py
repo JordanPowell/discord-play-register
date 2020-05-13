@@ -1,5 +1,5 @@
 from db import db
-from utils import extract_remainder_after_fragments, extract_time
+from utils import extract_remainder_after_fragments, extract_time, epoch_time_to_digital
 from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_game_by_name_or_alias, \
     write_games_dict, read_games_dict, create_mention
 from dotenv import load_dotenv
@@ -150,6 +150,22 @@ class MentionMessageHandler(MessageHandler):
         return None, string
 
 
+def generate_ready_at_time_messages(number_of_ready_players, unready_would_plays_for_game):
+    done_times = set()
+    string = ""
+    if number_of_ready_players > 0:
+        string += "(%s) " % number_of_ready_players
+    for uwp in unready_would_plays_for_game:
+        time_ready = uwp.for_time
+        if time_ready in done_times:
+            continue
+        done_times.add(time_ready)
+        number_ready_at_time = len(db.get_would_plays_ready_at_time(uwp.game, time_ready))
+        string += "(%s at %s)" % (number_ready_at_time, epoch_time_to_digital(time_ready))
+    #print(f"generate_ready_at_time_messages: {string}")
+    return string
+
+
 class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’dplay", "I’dpaly", "same to", "same"]
     helper_command_list = [f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
@@ -157,15 +173,20 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     def get_all_responses_with_games(self, message, games):
         for_time = extract_time(message.content)
         game_and_players_strings = []
+
         for game in games:
             db.record_would_play(message.author, game, for_time)
-        game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games]
+            unready_would_plays_for_game = db.get_unready_would_plays_for_game(game)
+            if len(unready_would_plays_for_game) == 0:
+                game_and_players_strings += ["%s (%s)" % (game.name, len(game.get_ready_players()))]
+            else:
+                game_and_players_strings += ["%s %s" % (game.name, generate_ready_at_time_messages(len(game.get_ready_players()), unready_would_plays_for_game))]
         messages = ["%s would play %s" % (message.author.display_name, make_sentence_from_strings(game_and_players_strings))]
         for game in games:
             messages += get_any_ready_messages(game)
         return messages
 
-        messages = ["%s would play %s" % (message.author.display_name, make_sentence_from_strings(game_and_players_strings))]
+        
 
         for game in games:
             messages += get_any_ready_messages(game)
