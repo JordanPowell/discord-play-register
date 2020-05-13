@@ -2,6 +2,7 @@ import re
 from datetime import datetime, date
 from time import localtime, strftime
 
+
 def extract_remainder_after_fragments(fragments, content):
     content = content.lower()
     for fragment in fragments:
@@ -13,11 +14,13 @@ def extract_remainder_after_fragments(fragments, content):
             continue  # or pass?
     return content
 
+
 def epoch_time_to_digital(ftime):
     if ftime:
         struct_time = localtime(ftime)
         return strftime("%H:%M", struct_time)
     return None
+
 
 def format_time_string(time_string):
     # format regexed matched string to be (12H) HH:MMa/pm

@@ -1,5 +1,4 @@
 import time
-from time import localtime, strftime
 from utils import epoch_time_to_digital
 
 
@@ -99,6 +98,9 @@ class DB:
 
     def get_unready_players_for_game(self, game):
         return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and (wp.for_time is not None) and (wp.for_time > time.time()))]
+
+    def get_ready_would_plays_for_game(self, game):
+        return [wp for wp in self.get_would_plays() if ((wp.game.name == game.name) and (wp.for_time is None))]
 
     def get_unready_would_plays_for_game(self, game):
         return [wp for wp in self.get_would_plays() if ((wp.game.name == game.name) and (wp.for_time is not None) and (wp.for_time > time.time()))]

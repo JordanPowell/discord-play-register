@@ -150,19 +150,26 @@ class MentionMessageHandler(MessageHandler):
         return None, string
 
 
-def generate_ready_at_time_messages(number_of_ready_players, unready_would_plays_for_game):
+def generate_ready_at_time_messages(ready_would_plays_for_game, unready_would_plays_for_game, list_players=False):
     done_times = set()
     string = ""
+    number_of_ready_players = len(ready_would_plays_for_game)
     if number_of_ready_players > 0:
-        string += "(%s) " % number_of_ready_players
+        if list_players:
+            string += "(%s. %s) " % (number_of_ready_players, ", ".join([wp.player.display_name for wp in ready_would_plays_for_game]))
+        else:
+            string += "(%s) " % number_of_ready_players
     for uwp in unready_would_plays_for_game:
         time_ready = uwp.for_time
         if time_ready in done_times:
             continue
         done_times.add(time_ready)
-        number_ready_at_time = len(db.get_would_plays_ready_at_time(uwp.game, time_ready))
-        string += "(%s at %s)" % (number_ready_at_time, epoch_time_to_digital(time_ready))
-    #print(f"generate_ready_at_time_messages: {string}")
+        ready_at_time_would_plays = db.get_would_plays_ready_at_time(uwp.game, time_ready)
+        number_ready_at_time = len(ready_at_time_would_plays)
+        if list_players:
+            string += "(%s at %s. %s)" % (number_ready_at_time, epoch_time_to_digital(time_ready), ", ".join([wp.player.display_name for wp in ready_at_time_would_plays]))
+        else:
+            string += "(%s at %s)" % (number_ready_at_time, epoch_time_to_digital(time_ready))
     return string
 
 
@@ -176,17 +183,16 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
 
         for game in games:
             db.record_would_play(message.author, game, for_time)
+            ready_would_plays_for_game = db.get_ready_would_plays_for_game(game)
             unready_would_plays_for_game = db.get_unready_would_plays_for_game(game)
             if len(unready_would_plays_for_game) == 0:
                 game_and_players_strings += ["%s (%s)" % (game.name, len(game.get_ready_players()))]
             else:
-                game_and_players_strings += ["%s %s" % (game.name, generate_ready_at_time_messages(len(game.get_ready_players()), unready_would_plays_for_game))]
+                game_and_players_strings += ["%s %s" % (game.name, generate_ready_at_time_messages(ready_would_plays_for_game, unready_would_plays_for_game))]
         messages = ["%s would play %s" % (message.author.display_name, make_sentence_from_strings(game_and_players_strings))]
         for game in games:
             messages += get_any_ready_messages(game)
         return messages
-
-        
 
         for game in games:
             messages += get_any_ready_messages(game)
@@ -211,9 +217,10 @@ class StatusHandler(MentionMessageHandler):
     def get_all_responses(self, message):
         messages = ['Bot alive']
         for game in get_known_games():
-            players = game.get_ready_players()
-            if players:
-                messages.append('%s has %s (%s)' % (game, len(players), ", ".join([player.display_name for player in players])))
+            ready_would_plays_for_game = db.get_ready_would_plays_for_game(game)
+            unready_would_plays_for_game = db.get_unready_would_plays_for_game(game)
+            if ready_would_plays_for_game or unready_would_plays_for_game:
+                messages.append("%s %s" % (game.name, generate_ready_at_time_messages(ready_would_plays_for_game, unready_would_plays_for_game, list_players=True)))
         return ['\n'.join(messages)]
 
 
