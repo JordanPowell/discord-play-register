@@ -41,6 +41,9 @@ class WouldPlay:
     def second_recorded_at(self):
         return int(self.recorded_at)
 
+    def remove_for_time(self):
+        self.for_time = None
+
     def __eq__(self, other):
         if type(other) is type(self):
             return (self.player.id == other.player.id and self.game.name == other.game.name)
@@ -59,6 +62,7 @@ class DB:
         if not game.name:
             raise RuntimeError('Cannot record for a game with no name')
         self._prune_expired()
+        self._update_for_times()
         wp = WouldPlay(player=player, game=game, for_time=for_time)
         if wp in self._store:
             self._store.remove(wp)
@@ -74,6 +78,7 @@ class DB:
 
     def get_would_plays(self):
         self._prune_expired()
+        self._update_for_times()
         return sorted(self._store, key=lambda x: x.recorded_at)
 
     def get_would_plays_for_game(self, game):
@@ -100,13 +105,18 @@ class DB:
     def get_unready_players_for_game(self, game):
         return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and (wp.for_time is not None) and (wp.for_time > time.time()))]
 
-    def get_would_plays_ready_at_time(self, game, time):
+    def get_would_plays_ready_at_time(self, game, ftime):
         would_plays = self.get_would_plays_for_game(game)
-        return [wp for wp in would_plays if (wp.expires_at > time) and ((wp.for_time < time) or (wp.for_time is None))]
+        return [wp for wp in would_plays if (wp.expires_at > ftime) and ((wp.for_time is None) or (wp.for_time < ftime))]
 
     def _prune_expired(self):
         # why can't I do self.prune(wp -> wp.expired)
         self._store = set([wp for wp in self._store if not wp.expired])
+
+    def _update_for_times(self):
+        for wp in self._store:
+            if wp.for_time is not None and wp.for_time < time.time():
+                wp.remove_for_time()
 
     def _print_db(self):
         for x in self._store:

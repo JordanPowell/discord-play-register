@@ -145,6 +145,7 @@ class TestTimeUtils():
     assert extract_time("id play cs at 11:59") == datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59).timestamp()
     print("TestTimeUtils PASSED")
 
+
 class TestTime(PlayRegisterBotTestCase):
     def test_id_play_in_future(self):
         self.user_message("I'd play cs at 11:59pm")
