@@ -27,10 +27,6 @@ def get_message_handlers():
     ]
 
 
-def create_mention(player):
-    return '<@!%s>' % player.id
-
-
 def get_any_ready_messages(game):
     if game.is_ready_to_play:
         return game.get_ready_messages()
@@ -105,7 +101,7 @@ class GameExtractionMixin:
     def get_all_responses(self, message):
         plays = extract_remainder_after_fragments(self.fragments, message.content)
         game_names = plays.split(self.multi_game_delimiter)
-        games = [lookup_game_by_name_or_alias(game_name) for game_name in game_names if game_name]
+        games = [lookup_game_by_name_or_alias(game_name) for game_name in game_names if lookup_game_by_name_or_alias(game_name)]
         responses = []
         if games:
             games = [game for game in games if game]
@@ -159,9 +155,13 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     helper_command_list = [f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
 
     def get_all_responses_with_games(self, message, games):
-        would_plays = [db.record_would_play(message.author, game) for game in games]
+        for game in games:
+            db.record_would_play(message.author, game)
         game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games]
-        return ["%s would play %s" % (message.author.display_name, make_sentence_from_strings(game_and_players_strings))]
+        messages = ["%s would play %s" % (message.author.display_name, make_sentence_from_strings(game_and_players_strings))]
+        for game in games:
+            messages += get_any_ready_messages(game)
+        return messages
 
     def get_all_responses_without_game(self, message):
         last_would_plays = db.get_last_would_plays_at_same_time()
@@ -169,13 +169,8 @@ class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
         if not last_would_plays:
             return []
 
-        messages = []
         games = set([lwp.game for lwp in last_would_plays])
-
-        messages += self.get_all_responses_with_games(message, games)
-
-        for game in games:
-            messages += get_any_ready_messages(game)
+        messages = self.get_all_responses_with_games(message, games)
 
         return messages
 
