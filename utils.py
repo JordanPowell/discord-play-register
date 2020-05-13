@@ -51,5 +51,7 @@ def extract_time(content):
     if match is not None:
         for_time = match.group(1)
         for_time = format_time_string(for_time)
-        return string_to_datetime(for_time)
+        date_time = string_to_datetime(for_time)
+        if date_time > datetime.now():
+            return date_time
     return None

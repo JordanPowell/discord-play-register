@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 
 
 DEFAULT_EXPIRY_S = 60 * 60 * 4
@@ -11,7 +12,7 @@ class WouldPlay:
         self.recorded_at = time.time()
         self.for_time = for_time
         if self.for_time:
-            self.expires_at = self.for_time + DEFAULT_EXPIRY_S
+            self.expires_at = self.for_time.timestamp() + DEFAULT_EXPIRY_S
         else:
             self.expires_at = expires_at or (self.recorded_at + DEFAULT_EXPIRY_S)
 
@@ -55,6 +56,7 @@ class DB:
         if wp in self._store:
             self._store.remove(wp)
         self._store.add(wp)
+        self._print_db()
         return wp
 
     def cancel_would_plays(self, player):
@@ -84,6 +86,12 @@ class DB:
             most_recent = sorted_wps[-1]
             return [s for s in sorted_wps if s.second_recorded_at == most_recent.second_recorded_at]
         return []
+
+    def get_ready_players_for_game(self, game):
+        return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and ((wp.for_time is None) or (wp.for_time < datetime.now())))]
+
+    def get_unready_players_for_game(self, game):
+        return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and ((wp.for_time is not None) or (wp.for_time > datetime.now())))]
 
     def _prune_expired(self):
         # why can't I do self.prune(wp -> wp.expired)
