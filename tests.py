@@ -7,6 +7,8 @@ from discord.enums import MessageType
 from discord.user import User
 from bot import handle_message
 import asyncio
+from utils import extract_time, format_time_string
+from datetime import datetime
 
 
 class FakeState:
@@ -87,6 +89,12 @@ class PlayRegisterBotTestCase(unittest.TestCase):
     def assertNumPlayersForGame(self, game, num):
         self.assertEqual(num, len(lookup_game_by_name_or_alias(game).get_available_players()))
 
+    def assertNumPlayersReadyForGame(self, game, num):
+        self.assertEqual(num, len(lookup_game_by_name_or_alias(game).get_ready_players()))
+
+    def assertNumPlayersUnreadyForGame(self, game, num):
+        self.assertEqual(num, len(lookup_game_by_name_or_alias(game).get_unready_players()))
+
 
 class TestStatus(PlayRegisterBotTestCase):
     def test_status_line_no_games(self):
@@ -116,3 +124,29 @@ class TestSame(PlayRegisterBotTestCase):
         self.user_message("same to cs", author=create_discord_user())
         self.assertNumPlayersForGame('cs', 2)
         self.assertNumPlayersForGame('rl', 1)
+
+
+class TestTimeUtils():
+    today = datetime.today()
+    assert format_time_string("5") == "05:00pm"
+    assert format_time_string("5pm") == "05:00pm"
+    assert format_time_string("10pm") == "10:00pm"
+    assert format_time_string("10") == "10:00pm"
+    assert format_time_string("10am") == "10:00am"
+    assert format_time_string("5am") == "05:00am"
+    assert format_time_string("5:00") == "05:00pm"
+    assert format_time_string("5:00pm") == "05:00pm"
+    assert format_time_string("05:00pm") == "05:00pm"
+    assert format_time_string("5:00am") == "05:00am"
+    assert format_time_string("05:00am") == "05:00am"
+    assert extract_time("id play cs") is None
+    assert extract_time("id play cs at") is None
+    assert extract_time("id play cs @ 11") == datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=0).timestamp()
+    assert extract_time("id play cs at 11:59") == datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59).timestamp()
+    print("TestTimeUtils PASSED")
+
+class TestTime(PlayRegisterBotTestCase):
+    def test_id_play_in_future(self):
+        self.user_message("I'd play cs at 11:59pm")
+        self.assertNumPlayersUnreadyForGame('cs', 1)
+        self.assertNumPlayersReadyForGame('cs', 0)

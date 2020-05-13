@@ -1,8 +1,14 @@
 import time
-from datetime import datetime
-
+from time import localtime, strftime
 
 DEFAULT_EXPIRY_S = 60 * 60 * 4
+
+
+def epoch_time_to_digital(ftime):
+    if ftime:
+        struct_time = localtime(ftime)
+        return strftime("%H:%M", struct_time)
+    return None
 
 
 class WouldPlay:
@@ -11,13 +17,14 @@ class WouldPlay:
         self.game = game
         self.recorded_at = time.time()
         self.for_time = for_time
+        print(self.for_time)
         if self.for_time:
-            self.expires_at = self.for_time.timestamp() + DEFAULT_EXPIRY_S
+            self.expires_at = self.for_time + DEFAULT_EXPIRY_S
         else:
             self.expires_at = expires_at or (self.recorded_at + DEFAULT_EXPIRY_S)
 
     def __str__(self):
-        return '<%s would play %s (for time: %s, recorded at: %s)>' % (self.user, self.game, self.for_time, self.recorded_at)
+        return '<%s would play %s (for time: %s, recorded at: %s, expires at: %s)>' % (self.user, self.game, epoch_time_to_digital(self.for_time), epoch_time_to_digital(self.recorded_at), epoch_time_to_digital(self.expires_at))
 
     def __repr__(self):
         return str(self)
@@ -88,10 +95,14 @@ class DB:
         return []
 
     def get_ready_players_for_game(self, game):
-        return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and ((wp.for_time is None) or (wp.for_time < datetime.now())))]
+        return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and ((wp.for_time is None) or (wp.for_time < time.time())))]
 
     def get_unready_players_for_game(self, game):
-        return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and ((wp.for_time is not None) or (wp.for_time > datetime.now())))]
+        return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and ((wp.for_time is not None) or (wp.for_time > time.time())))]
+
+    def get_would_plays_ready_at_time(self, game, time):
+        would_plays = self.get_would_plays_for_game(game)
+        return [wp for wp in would_plays if (wp.expires_at > time) and ((wp.for_time < time) or (wp.for_time is None))]
 
     def _prune_expired(self):
         # why can't I do self.prune(wp -> wp.expired)

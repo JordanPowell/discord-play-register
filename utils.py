@@ -46,12 +46,14 @@ def string_to_datetime(time_string):
 def extract_time(content):
     time_specifiers = ["@", "at"]
     time_specifiers_regex = "|".join(time_specifiers)
-    r = re.compile(fr"(?:{time_specifiers_regex}) ((?:0?[1-9]|1[0-2])(?::[0-5]\d)*(?:[ap]m)*)")
+    r = re.compile(fr"(?:{time_specifiers_regex}) ((?:1[0-2]|0?[1-9])(?::[0-5]\d)*(?:[ap]m)*)")
     match = r.search(content.lower())
     if match is not None:
         for_time = match.group(1)
         for_time = format_time_string(for_time)
         date_time = string_to_datetime(for_time)
         if date_time > datetime.now():
-            return date_time
+            return date_time.timestamp()
+        else:
+            print("Tried to specify a time in the past! Ignoring time request...")
     return None
