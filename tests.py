@@ -7,6 +7,8 @@ from discord.enums import MessageType
 from discord.user import User
 from bot import handle_message
 import asyncio
+from utils import extract_time, format_time_string
+from datetime import datetime
 
 
 class FakeState:
@@ -87,6 +89,20 @@ class PlayRegisterBotTestCase(unittest.TestCase):
     def assertNumPlayersForGame(self, game, num):
         self.assertEqual(num, len(lookup_game_by_name_or_alias(game).get_available_players()))
 
+    def assertNumPlayersReadyForGame(self, game, num):
+        self.assertEqual(num, len(lookup_game_by_name_or_alias(game).get_ready_players()))
+
+    def assertNumPlayersUnreadyForGame(self, game, num):
+        self.assertEqual(num, len(lookup_game_by_name_or_alias(game).get_unready_players()))
+
+
+class UtilsTestCase(unittest.TestCase):
+    def assert_format_time_string(self, time_string, formatted_string):
+        self.assertEqual(format_time_string(time_string), formatted_string)
+
+    def assert_extract_time(self, message, ftime):
+        self.assertEqual(extract_time(message), ftime)
+
 
 class TestStatus(PlayRegisterBotTestCase):
     def test_status_line_no_games(self):
@@ -116,3 +132,55 @@ class TestSame(PlayRegisterBotTestCase):
         self.user_message("same to cs", author=create_discord_user())
         self.assertNumPlayersForGame('cs', 2)
         self.assertNumPlayersForGame('rl', 1)
+
+
+class TestTimeUtils(UtilsTestCase):
+    def test_format_time_string(self):
+        self.assert_format_time_string("5", "05:00pm")
+        self.assert_format_time_string("5pm", "05:00pm")
+        self.assert_format_time_string("10pm", "10:00pm")
+        self.assert_format_time_string("10", "10:00pm")
+        self.assert_format_time_string("10am", "10:00am")
+        self.assert_format_time_string("5am", "05:00am")
+        self.assert_format_time_string("5:01", "05:01pm")
+        self.assert_format_time_string("5:00pm", "05:00pm")
+        self.assert_format_time_string("05:00pm", "05:00pm")
+        self.assert_format_time_string("5:00am", "05:00am")
+        self.assert_format_time_string("05:00am", "05:00am")
+        self.assert_format_time_string("16:00pm", "16:00pm")
+        self.assert_format_time_string("16", "16:00pm")
+        self.assert_format_time_string("16pm", "16:00pm")
+
+    def test_extract_time(self):
+        today = datetime.today()
+        self.assert_extract_time("id play cs", None)
+        self.assert_extract_time("id play cs at", None)
+        self.assert_extract_time("id play cs @ 11", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=0).timestamp())
+        self.assert_extract_time("id play cs at 11:59", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59).timestamp())
+
+
+class TestTime(PlayRegisterBotTestCase):
+    def test_id_play_in_future(self):
+        self.user_message("I'd play cs at 11:59pm")
+        self.assertNumPlayersUnreadyForGame('cs', 1)
+        self.assertNumPlayersReadyForGame('cs', 0)
+
+    def test_some_id_play_in_future(self):
+        self.user_message("I'd play cs")
+        self.user_message("I'd play cs at 11:59pm", author=create_discord_user())
+        self.user_message("I'd play cs @ 11:59pm", author=create_discord_user())
+        self.user_message("I'd play cs at 00:01am", author=create_discord_user())
+        self.assertNumPlayersUnreadyForGame('cs', 2)
+        self.assertNumPlayersReadyForGame('cs', 2)
+
+    def test_multi_id_play_in_future(self):
+        self.user_message("I'd play cs/rl/lol")
+        self.user_message("I'd play cs/rl/lol at 11:59pm", author=create_discord_user())
+        self.user_message("I'd play cs/rl/lol @ 11:59pm", author=create_discord_user())
+        self.user_message("I'd play cs/rl/lol at 00:01am", author=create_discord_user())
+        self.assertNumPlayersUnreadyForGame('cs', 2)
+        self.assertNumPlayersReadyForGame('cs', 2)
+        self.assertNumPlayersUnreadyForGame('rl', 2)
+        self.assertNumPlayersReadyForGame('rl', 2)
+        self.assertNumPlayersUnreadyForGame('lol', 2)
+        self.assertNumPlayersReadyForGame('lol', 2)
