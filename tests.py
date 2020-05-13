@@ -150,3 +150,11 @@ class TestTime(PlayRegisterBotTestCase):
         self.user_message("I'd play cs at 11:59pm")
         self.assertNumPlayersUnreadyForGame('cs', 1)
         self.assertNumPlayersReadyForGame('cs', 0)
+
+    def test_some_id_play_in_future(self):
+        self.user_message("I'd play cs")
+        self.user_message("I'd play cs at 11:59pm", author=create_discord_user())
+        self.user_message("I'd play cs @ 11:59pm", author=create_discord_user())
+        self.user_message("I'd play cs at 00:01am", author=create_discord_user())
+        self.assertNumPlayersUnreadyForGame('cs', 2)
+        self.assertNumPlayersReadyForGame('cs', 2)

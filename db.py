@@ -98,7 +98,7 @@ class DB:
         return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and ((wp.for_time is None) or (wp.for_time < time.time())))]
 
     def get_unready_players_for_game(self, game):
-        return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and ((wp.for_time is not None) or (wp.for_time > time.time())))]
+        return [wp.player for wp in self.get_would_plays() if ((wp.game.name == game.name) and (wp.for_time is not None) and (wp.for_time > time.time()))]
 
     def get_would_plays_ready_at_time(self, game, time):
         would_plays = self.get_would_plays_for_game(game)
