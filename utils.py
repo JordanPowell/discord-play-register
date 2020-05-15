@@ -56,7 +56,7 @@ def string_to_datetime(time_string):
 
 
 def extract_time(content):
-    time_specifiers = ["@", "at"]
+    time_specifiers = ["@", "at", "from"]
     time_specifiers_regex = "|".join(time_specifiers)
     r = re.compile(fr"(?:{time_specifiers_regex}) ((?:2[0-3]|[01]?[0-9])(?::[0-5]\d)*(?:[ap]m)*)")
     match = r.search(content.lower())

@@ -162,6 +162,7 @@ class TestTimeUtils(UtilsTestCase):
         self.assert_extract_time("id play cs at 23:59pm", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59).timestamp())
         self.assert_extract_time("id play cs at 23:59am", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59).timestamp())
         self.assert_extract_time("id play cs at 23", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=00).timestamp())
+        self.assert_extract_time("id play cs from 23:59", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59).timestamp())
 
 
 class TestTime(PlayRegisterBotTestCase):
