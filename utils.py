@@ -23,7 +23,7 @@ def epoch_time_to_digital(ftime):
 
 
 def format_time_string(time_string):
-    # format regexed matched string to be (12H) HH:MMa/pm
+    # format regexed matched string to be (24H) HH:MMa/pm
     if ':' in time_string:
         hours = time_string.split(":")[0]
         rest = time_string.split(":")[1]
@@ -48,13 +48,17 @@ def format_time_string(time_string):
 
 def string_to_datetime(time_string):
     today_string = str(date.today())  # returns format %Y-%m-%d
-    return datetime.strptime(today_string + " " + time_string, '%Y-%m-%d %I:%M%p')
+    hour = int(time_string[:2])
+    if 0 < hour <= 12:
+        return datetime.strptime(today_string + " " + time_string, '%Y-%m-%d %I:%M%p')
+    else:
+        return datetime.strptime(today_string + " " + time_string, '%Y-%m-%d %H:%M%p')
 
 
 def extract_time(content):
-    time_specifiers = ["@", "at"]
+    time_specifiers = ["@", "at", "from"]
     time_specifiers_regex = "|".join(time_specifiers)
-    r = re.compile(fr"(?:{time_specifiers_regex}) ((?:1[0-2]|0?[1-9])(?::[0-5]\d)*(?:[ap]m)*)")
+    r = re.compile(fr"(?:{time_specifiers_regex}) ((?:2[0-3]|[01]?[0-9])(?::[0-5]\d)*(?:[ap]m)*)")
     match = r.search(content.lower())
     if match is not None:
         for_time = match.group(1)

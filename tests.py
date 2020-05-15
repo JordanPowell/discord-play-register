@@ -150,6 +150,7 @@ class TestTimeUtils(UtilsTestCase):
         self.assert_format_time_string("16:00pm", "16:00pm")
         self.assert_format_time_string("16", "16:00pm")
         self.assert_format_time_string("16pm", "16:00pm")
+        self.assert_format_time_string("13", "13:00pm")
 
     def test_extract_time(self):
         today = datetime.today()
@@ -157,6 +158,11 @@ class TestTimeUtils(UtilsTestCase):
         self.assert_extract_time("id play cs at", None)
         self.assert_extract_time("id play cs @ 11", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=0).timestamp())
         self.assert_extract_time("id play cs at 11:59", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59).timestamp())
+        self.assert_extract_time("id play cs at 23:59", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59).timestamp())
+        self.assert_extract_time("id play cs at 23:59pm", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59).timestamp())
+        self.assert_extract_time("id play cs at 23:59am", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59).timestamp())
+        self.assert_extract_time("id play cs at 23", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=00).timestamp())
+        self.assert_extract_time("id play cs from 23:59", datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59).timestamp())
 
 
 class TestTime(PlayRegisterBotTestCase):
