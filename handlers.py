@@ -1,5 +1,5 @@
 from db import db
-from utils import extract_remainder_after_fragments
+from utils import extract_remainder_after_fragments, extract_time, epoch_time_to_digital
 from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_game_by_name_or_alias, \
     write_games_dict, read_games_dict, create_mention
 from response import TextResponse
@@ -17,7 +17,6 @@ CLIENT_ID = os.getenv('CLIENT_ID')
 def get_message_handlers():
     return [
         WouldPlayHandler(),
-        SameHandler(),
         ClearHandler(),
         CancelHandler(),
         PingHandler(),
@@ -27,10 +26,6 @@ def get_message_handlers():
         AddHandler(),
         HelpHandler()
     ]
-
-
-def create_mention(player):
-    return '<@!%s>' % player.id
 
 
 def get_any_ready_messages(game):
@@ -107,9 +102,10 @@ class GameExtractionMixin:
     def get_all_responses(self, message):
         plays = extract_remainder_after_fragments(self.fragments, message.content)
         game_names = plays.split(self.multi_game_delimiter)
-        games = [lookup_game_by_name_or_alias(game_name) for game_name in game_names if game_name]
+        games = [lookup_game_by_name_or_alias(game_name) for game_name in game_names if lookup_game_by_name_or_alias(game_name)]
         responses = []
         if games:
+            games = [game for game in games if game]
             responses += self.get_all_responses_with_games(message, games)
         else:
             responses += self.get_all_responses_without_game(message)
@@ -155,23 +151,56 @@ class MentionMessageHandler(MessageHandler):
         return None, string
 
 
+def generate_ready_at_time_messages(ready_would_plays_for_game, unready_would_plays_for_game, list_players=False):
+    done_times = set()
+    string = ""
+    number_of_ready_players = len(ready_would_plays_for_game)
+    if number_of_ready_players > 0:
+        if list_players:
+            string += "(%s. %s) " % (number_of_ready_players, ", ".join([wp.player.display_name for wp in ready_would_plays_for_game]))
+        else:
+            string += "(%s) " % number_of_ready_players
+    for uwp in unready_would_plays_for_game:
+        time_ready = uwp.for_time
+        if time_ready in done_times:
+            continue
+        done_times.add(time_ready)
+        ready_at_time_would_plays = db.get_would_plays_ready_at_time(uwp.game, time_ready)
+        number_ready_at_time = len(ready_at_time_would_plays)
+        if list_players:
+            string += "(%s at %s. %s)" % (number_ready_at_time, epoch_time_to_digital(time_ready), ", ".join([wp.player.display_name for wp in ready_at_time_would_plays]))
+        else:
+            string += "(%s at %s)" % (number_ready_at_time, epoch_time_to_digital(time_ready))
+    return string
+
+
 class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
-    fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly"]
+    fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly", "same to", "same"]
     helper_command_list = [f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
 
     def get_all_responses_without_game(self, message):
         return [TextResponse(message.channel, f"What? What would you play {message.author.name}?")]
 
     def get_all_responses_with_games(self, message, games):
-        would_plays = [db.record_would_play(message.author, game) for game in games if game]
-        game_and_players_strings = ["%s (%s)" % (game.name, len(game.get_available_players())) for game in games if game]
-        return [TextResponse(message.channel, "%s would play %s" % (message.author.name, make_sentence_from_strings(game_and_players_strings)))]
+        for_time = extract_time(message.content)
+        game_and_players_strings = []
 
+        for game in games:
+            db.record_would_play(message.author, game, for_time)
+            ready_would_plays_for_game = db.get_ready_would_plays_for_game(game)
+            unready_would_plays_for_game = db.get_unready_would_plays_for_game(game)
+            if len(unready_would_plays_for_game) == 0:
+                game_and_players_strings += ["%s (%s)" % (game.name, len(game.get_ready_players()))]
+            else:
+                game_and_players_strings += ["%s %s" % (game.name, generate_ready_at_time_messages(ready_would_plays_for_game, unready_would_plays_for_game))]
+        messages = ["%s would play %s" % (message.author.display_name, make_sentence_from_strings(game_and_players_strings))]
+        for game in games:
+            messages += get_any_ready_messages(game)
+        return messages
 
-class SameHandler(GameExtractionMixin, ContentBasedHandler):
-    fragments = ['same to', 'same']
-    helper_command_list = [f"{fragments[1]} - Add your name to the list of players that would play the game(s) mentioned in the most recent \"I'd play\".",
-                           f"{fragments[1]} <game> - Add your name to the list of players that would play <game>."]
+        for game in games:
+            messages += get_any_ready_messages(game)
+        return messages
 
     def get_all_responses_without_game(self, message):
         last_would_plays = db.get_last_would_plays_at_same_time()
@@ -179,26 +208,10 @@ class SameHandler(GameExtractionMixin, ContentBasedHandler):
         if not last_would_plays:
             return []
 
-        messages = []
         games = set([lwp.game for lwp in last_would_plays])
+        messages = self.get_all_responses_with_games(message, games)
 
-        for game in games:
-            would_play = db.record_would_play(message.author, game)
-            messages += ["%s would also play %s (%s)" % (would_play.user, game, len(game.get_available_players()))]
-        for game in games:
-            messages += get_any_ready_messages(game)
         return messages
-
-    def get_all_responses_with_game(self, message, game):
-        last_would_play = db.get_last_would_play(game)
-
-        if not last_would_play:
-            return []
-
-        game = game or last_would_play.game
-        would_play = db.record_would_play(message.author, game)
-
-        return ["%s would also play %s (%s)" % (would_play.user, game, len(game.get_available_players()))] + get_any_ready_messages(game)
 
 
 class StatusHandler(MentionMessageHandler):
@@ -208,9 +221,10 @@ class StatusHandler(MentionMessageHandler):
     def get_all_responses(self, message):
         messages = ['Bot alive']
         for game in get_known_games():
-            players = game.get_available_players()
-            if players:
-                messages.append('%s has %s (%s)' % (game, len(players), ", ".join([player.name for player in players])))
+            ready_would_plays_for_game = db.get_ready_would_plays_for_game(game)
+            unready_would_plays_for_game = db.get_unready_would_plays_for_game(game)
+            if ready_would_plays_for_game or unready_would_plays_for_game:
+                messages.append("%s %s" % (game.name, generate_ready_at_time_messages(ready_would_plays_for_game, unready_would_plays_for_game, list_players=True)))
         return ['\n'.join(messages)]
 
 

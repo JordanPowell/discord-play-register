@@ -26,18 +26,24 @@ class Game:
         return self.get_available_players()[:self.max_players]
 
     def is_ready_to_play(self):
-        players = self.get_available_players()
+        players = self.get_ready_players()
         return len(players) >= self.min_players
 
     def get_ready_messages(self):
-        players = self.get_available_players()
+        players = self.get_ready_players()
         if len(players) >= self.min_players:
-            if len(players) >= self.max_players:
+            if len(players) == self.max_players:
                 return ["%s are ready to play %s!\n@ me with 'clear %s' to clear the players." % (
                     ','.join([create_mention(p) for p in players]),
                     self.name,
                     self.name,)]
         return []
+
+    def get_ready_players(self):
+        return db.get_ready_players_for_game(self)
+
+    def get_unready_players(self):
+        return db.get_unready_players_for_game(self)
 
     def __str__(self):
         return '%s%s' % (self.name, ' (unknown game)' if not self.known else '')
