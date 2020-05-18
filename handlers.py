@@ -2,6 +2,7 @@ from db import db
 from utils import extract_remainder_after_fragments, extract_time, epoch_time_to_digital
 from game import lookup_game_by_name_or_alias, get_known_games, lookup_known_game_by_name_or_alias, \
     write_games_dict, read_games_dict, create_mention
+from response import TextResponse
 from dotenv import load_dotenv
 import itertools
 import os
@@ -176,6 +177,9 @@ def generate_ready_at_time_messages(ready_would_plays_for_game, unready_would_pl
 class WouldPlayHandler(GameExtractionMixin, ContentBasedHandler):
     fragments = ["I'd play", "id play", "I'd paly", "id paly", "I’d play", "I’d paly", "I’dplay", "I’dpaly", "same to", "same"]
     helper_command_list = [f"{fragments[0]} <game> - Add your name to the list of players that would play <game>."]
+
+    def get_all_responses_without_game(self, message):
+        return [TextResponse(message.channel, f"What? What would you play {message.author.name}?")]
 
     def get_all_responses_with_games(self, message, games):
         for_time = extract_time(message.content)
